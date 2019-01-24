@@ -283,11 +283,11 @@ public:
 
 		
         if (joystickMain.GetRawButton(6)) // if green a button is pressed
-            moderator = 1.0; // makes robot go faster .. 1.0 for carpet
+            moderator = 0.85; // makes robot go faster .. 1.0 for carpet
         else if (joystickMain.GetRawButton(5)) // if red b button is pressed
             moderator = 0.5; // make it really slow
         else // base case let it be half speed
-            moderator = 0.8; // limits the range given from the controller // 0.85 for carpet
+            moderator = 0.75; // limits the range given from the controller // 0.85 for carpet
 
 		if (!turned) {
 			j_x_L = joystickMain.GetRawAxis(0);
@@ -303,7 +303,7 @@ public:
 			bool manTurning = false;
 			bool manMoving = false;
 
-            double safeDist = 30 * (FRpow + FLpow + RLpow + RRpow + 1);
+            double safeDist = 8 * (FRpow + FLpow + RLpow + RRpow + 1);
             cout << "SAFE" << safeDist << endl;
 
             
@@ -416,17 +416,18 @@ public:
 
     void turn(double moveAngle)
     {
+        double autoTurnMod = 0.75;
         resetGyro();
         while (true)
         {
             if (ahrs->GetYaw() < moveAngle) {
-                setRight(-moderator / 2);
-                setLeft(moderator / 2);
+                setRight(-moderator *autoTurnMod);
+                setLeft(moderator *autoTurnMod);
             } else {
-                setRight(moderator / 2);
-                setLeft(-moderator / 2);
+                setRight(moderator*autoTurnMod);
+                setLeft(-moderator *autoTurnMod);
             }
-            if (abs(ahrs->GetYaw() - moveAngle) < 12) { //3 is abitrary, i just stuck in a value
+            if (abs(ahrs->GetYaw() - moveAngle) < 36) { //3 is abitrary, i just stuck in a value
                 break;
             }
         }
@@ -464,10 +465,10 @@ public:
                 turn(45);
                 turned = true;
             } else if (joystickMain.GetRawButton(2)) {
-                turn(90);
+                turn(95);
                 turned = true;
             } else if (joystickMain.GetRawButton(3)) {
-                turn(135);
+                turn(-95);
                 turned = true;
             } else if (joystickMain.GetRawButton(4)) {
                 turn(180);
@@ -509,7 +510,7 @@ public:
 
     bool inductiveSensorState(){
         bool state = (inductiveSensor.GetVoltage() > 3.0 ? true : false);
-        cout << "SERVO VALL: " << ((servoInput.GetValue() * 0.47) - 33.4) << endl;
+        cout << "SERVO VALL: " << ( (servoInput.GetValue() * 0.47) - 33.4) << endl;
         return state;
     }
 
