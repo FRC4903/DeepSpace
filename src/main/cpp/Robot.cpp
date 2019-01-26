@@ -24,7 +24,7 @@
 #include <cmath>
 #include <math.h>
 
-#include "Communicator.h"
+#include "subsystems/Communicator.h"
 #include "AHRS.h"
 
 using namespace Communicator;
