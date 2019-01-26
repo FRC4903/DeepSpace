@@ -1,5 +1,5 @@
 #include <string>
-//#include <bits/stdc++.h>
+
 #include <iostream>
 
 #include <frc/TimedRobot.h>
@@ -13,30 +13,24 @@
 #include "frc/Preferences.h"
 #include "frc/Joystick.h"
 #include "frc/AnalogInput.h"
-//#include <opencv2>
-#include "cameraserver/CameraServer.h"
+
 #include "frc/Servo.h"
 #include "frc/PWM.h"
 
 #include "frc/WPILib.h"
-//#include "frc/NetworkTables/NetworkTable.h"
 
 #include <frc/Ultrasonic.h>
 #include <iostream>
 #include <cmath>
 #include <math.h>
-//#include "navx_mxp_cpp/MXP"
 
+#include "Communicator.h"
 #include "AHRS.h"
 
-//#include "TestMech.h"
+using namespace Communicator;
 
 using namespace frc;
 using namespace std;
-/*
-class Listener : public NetworkTable::ITableListener {
-    void valueChanged()
-}*/
 
 class Robot : public frc::TimedRobot {
 
@@ -91,12 +85,13 @@ public:
 
     bool inductiveSensorTriggered;
 
-    // int targetAngle = NULL;
     int targetAngle = 0;
 
     Timer *autoTimer = new Timer();
     AnalogInput inductiveSensor;
     AnalogInput servoInput;
+
+    Communicator *comm = new Communicator();
 
     // SETUP SECTION
     //
@@ -123,16 +118,8 @@ public:
         servoInput(1)
     
     {
-    
-        // cout << horzCamServo->GetAngle() << endl;
-        //table = NetworkTable::GetTable("Vision");
-
-        //NetworkTable::AddTableListener("test", listener, true);
-
         preferences = Preferences::GetInstance();
         ahrs = new AHRS(SPI::Port::kMXP);
-
-//      driverStation = DriverStation::GetInstance();
     }
 
     void setup()
@@ -169,8 +156,6 @@ public:
 
         //setupEncoderTalon(RL);
         //setupEncoderTalon(FR);
-
-        CameraServer::GetInstance()->StartAutomaticCapture();
 
         timer->Start();
         resetGyro();
