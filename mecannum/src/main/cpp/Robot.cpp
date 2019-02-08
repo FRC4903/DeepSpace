@@ -29,7 +29,13 @@
 
 #include "AHRS.h"
 
-//#include "TestMech.h"
+#include "Drivetrain.h"
+#include "Climber.h"
+#include "Elevator.h"
+
+using namespace Drivetrain;
+using namespace Climber;
+using namespace Elevator;
 
 using namespace frc;
 using namespace std;
@@ -42,15 +48,24 @@ class Robot : public frc::TimedRobot {
 
 public:
     Timer *timer = new Timer();
-    const double LIFT_CONSTANT_COEFFICIENT = 10;
 
     const int FRONT_LEFT_CIM = 1;
     const int FRONT_RIGHT_CIM = 2;
     const int REAR_LEFT_CIM = 3;
     const int REAR_RIGHT_CIM = 4;
 
+    const int FRONT_CLIMB_CIM = ;
+    const int BACK_CLIMB_CIM =;
+    const int BACK_DRIVE_BAG =;
+
+    const int LIFT_TALON_CIM =;
+    const int GRAB_TALON_CIM =;
+
+    const int CAM_SERVO_PORT = 8;
+
     Ultrasonic *ultraFront;
     TalonSRX FR, FL, RR, RL;
+    TalonSRX frontClimb, backClimb, backDrive, liftTalon, grabTalon;
 
     AHRS *ahrs;
     double gyroAngDif = 0;
@@ -98,6 +113,10 @@ public:
     AnalogInput inductiveSensor;
     AnalogInput servoInput;
 
+    Drivetrain drive;
+    Climber climber;
+    Elevator elevator;
+
     // SETUP SECTION
     //
     //
@@ -106,16 +125,22 @@ public:
     //      RR.SetNeutralMode(NeutralMode::Brake);
     //      RL.SetNeutralMode(NeutralMode::Brake);
 
-    //      //FR(FRONT_RIGHT_CIM), FL(FRONT_LEFT_CIM), RR(REAR_RIGHT_CIM), RL(REAR_LEFT_CIM)
-
     Robot() :
         joystickMain(0),
         joystickMechanisms(1),
-        FR(2),
-        FL(1),
-        RR(4),
-        RL(3),
-        horzCamServo(8),
+        FR(FRONT_RIGHT_CIM),
+        FL(FRONT_LEFT_CIM),
+        RR(RIGHT_REAR_CIM),
+        RL(REAR_LEFT_CIM),
+
+        frontCLimb(FRONT_CLIMB_CIM),
+        backClimb(BACK_CLIMB_CIM),
+        backDrive(BACK_DRIVE_BAG),
+
+        liftTalon(LIFT_TALON_CIM),
+        grabTalon(GRAB_TALON_CIM),
+
+        horzCamServo(CAM_SERVO_PORT),
         inductiveSensor(0),
         red(0),
         green(1),
@@ -128,11 +153,15 @@ public:
         //table = NetworkTable::GetTable("Vision");
 
         //NetworkTable::AddTableListener("test", listener, true);
-
         preferences = Preferences::GetInstance();
         ahrs = new AHRS(SPI::Port::kMXP);
 
 //      driverStation = DriverStation::GetInstance();
+        drive = new Drivetrain(FL, FR, RL, RR);
+        climb = new Climber(frontClimb, backClimb, backDrive);
+        elevator = new Elevator(liftTalon, grabTalon);
+
+
     }
 
     void setup()
@@ -234,7 +263,6 @@ public:
 
 // TELEOP SECTION
 
-
     void TeleopInit() {
         //driveSystemBrakeMode(true);  //DRIVING
 
@@ -299,182 +327,52 @@ public:
 			if((j_y_L < 0 && j_y_L >= -0.05) || (j_y_L > 0 && j_y_L <= 0.05)) { j_y_L = 0; }
 			if((j_x_R < 0 && j_x_R >= -0.05) || (j_x_R > 0 && j_x_R <= 0.05)) { j_x_R = 0; }
 
-			double FRpow, FLpow, RRpow, RLpow = 0;
-			bool manTurning = false;
-			bool manMoving = false;
-
             double safeDist = 8 * (FRpow + FLpow + RLpow + RRpow + 1);
             cout << "SAFE" << safeDist << endl;
 
-            
             if (!(j_y_L < 0 && ultraFront->GetRangeInches() < safeDist)) {
-
-                if (j_x_L != 0 || j_y_L != 0){
-                    manMoving = true;
-
-                    double mag = hypot(j_x_L, j_y_L);
-                    double calcAng = getRealAngle(getPi() - atan2(j_y_L, j_x_L));
-                    //double gAng = getRealAngle(gyro.GetAngle());
-                    double gAng = 0;
-
-                    /*
-                    setFrontRight(getWheelPower(calcAng - gAng, true) * mag * moderator);
-                    setFrontLeft(getWheelPower(calcAng - gAng, false) * mag * moderator);
-                    setRearRight(getWheelPower(calcAng - gAng, false) * mag * moderator);
-                    setRearLeft(getWheelPower(calcAng - gAng, true) * mag * moderator);*
-                    */
-                    FRpow += ( - getWheelPower(calcAng - gAng, true) * mag * moderator );
-                    FLpow += ( - getWheelPower(calcAng - gAng, false) * mag * moderator );
-                    RRpow += getWheelPower(calcAng - gAng, false) * mag * moderator;
-                    RLpow += getWheelPower(calcAng - gAng, true) * mag * moderator;
-
-                    
-                } 
-
-                if (j_x_R != 0) {
-                    manTurning = true;
-
-                    double turnMod = 1.0;
-
-                    if (! manMoving) {
-                        turnMod = 0.75;
-                    }
-                
-                    FRpow += j_x_R * turnMod;
-                    FLpow += j_x_R * turnMod;
-                    RRpow += j_x_R * turnMod;
-                    RLpow += j_x_R * turnMod;
-                    // FR.Set(ControlMode::PercentOutput, j_x_R * moderator);
-                    // FL.Set(ControlMode::PercentOutput, j_x_R * moderator);
-                    // RR.Set(ControlMode::PercentOutput, j_x_R * moderator);
-                    // RL.Set(ControlMode::PercentOutput, j_x_R * moderator);
-                    /*
-                    setFrontRight(- j_x_R * moderator);
-                    setFrontLeft(j_x_R * moderator);
-                    setRearRight(- j_x_R * moderator);
-                    setRearLeft(j_x_R * moderator);*/
-
-                } 
-                if (manMoving && manTurning) {
-                    FRpow /= 2;
-                    FLpow /= 2;
-                    RRpow /= 2;
-                    RLpow /= 2;
-                }
-            } else {
-                cout << "STOPPED" << endl;
-
-                FRpow = 0;
-                FLpow = 0;
-                RRpow = 0;
-                RLpow = 0;
+                drive.moveOrTurn(j_x_L, j_y_L, j_x_R, moderator);
             }
+        }
             
-			FR.Set(ControlMode::PercentOutput, FRpow * moderator);
-			FL.Set(ControlMode::PercentOutput, FLpow * moderator);
-			RR.Set(ControlMode::PercentOutput, RRpow * moderator);
-			RL.Set(ControlMode::PercentOutput, RLpow * moderator);
-			
-		}
-    }
-
-
-
-    double getRealAngle(double degAng) {
-        if (degAng < 0) {degAng += getPi() * 2; }
-
-        return degAng;
-    }
-
-    double getPi() {
-        return acos(-1);
-    }
-
-
-    double getWheelPower (double ang, bool A) {
-
-        double toAdd = ang;
-        int iter = 0;
-        double pow = 1.0;
-
-        double PI = getPi();
-        int FR[4] = {-2, 0, 2, 0};
-        int FL[4] = {0, -2, 0, 2};
-
-        while (toAdd >= PI / 2) {
-            toAdd -= PI/2;
-            pow += (A ? FR[iter] : FL[iter]);
-            iter++;
-        }
-
-        if(toAdd > 0) {
-            pow += (toAdd / (PI / 2)) * (A ? FR[iter] : FL[iter]);
-        }
-
-        return pow;
-    }
-
-    void turn(double moveAngle)
-    {
-        double autoTurnMod = 0.75;
-        resetGyro();
-        while (true)
-        {
-            if (ahrs->GetYaw() < moveAngle) {
-                setRight(-moderator *autoTurnMod);
-                setLeft(moderator *autoTurnMod);
-            } else {
-                setRight(moderator*autoTurnMod);
-                setLeft(-moderator *autoTurnMod);
-            }
-            if (abs(ahrs->GetYaw() - moveAngle) < 36) { //3 is abitrary, i just stuck in a value
-                break;
-            }
-        }
-
-		
-    }
-
-    void turnTo(double moveAngle) 
-    {
-        turn(moveAngle - ahrs->GetYaw() - gyroAngDif);
+        
     }
 
     bool buttonTurn()
     {   
         bool turned = false;
 
-        if (135 <= joystickMain.GetPOV() && joystickMain.GetPOV() <= 225) {
+        // if (135 <= joystickMain.GetPOV() && joystickMain.GetPOV() <= 225) {
 
-            if (joystickMain.GetRawButton(1)) {
-                turnTo(180);
-                turned = true;
-            } else if (joystickMain.GetRawButton(2)) {
-                turnTo(90);
-                turned = true;
-            } else if (joystickMain.GetRawButton(3)) {
-                turnTo(-90);
-                turned = true;
-            } else if (joystickMain.GetRawButton(4)) {
-                turnTo(0);
-                turned = true;
-            }
-        } else {
+        //     if (joystickMain.GetRawButton(1)) {
+        //         turnTo(180);
+        //         turned = true;
+        //     } else if (joystickMain.GetRawButton(2)) {
+        //         turnTo(90);
+        //         turned = true;
+        //     } else if (joystickMain.GetRawButton(3)) {
+        //         turnTo(-90);
+        //         turned = true;
+        //     } else if (joystickMain.GetRawButton(4)) {
+        //         turnTo(0);
+        //         turned = true;
+        //     }
+        // } else {
 
-            if (joystickMain.GetRawButton(1)) {
-                turn(45);
-                turned = true;
-            } else if (joystickMain.GetRawButton(2)) {
-                turn(95);
-                turned = true;
-            } else if (joystickMain.GetRawButton(3)) {
-                turn(-95);
-                turned = true;
-            } else if (joystickMain.GetRawButton(4)) {
-                turn(180);
-                turned = true;
-            }
+        if (joystickMain.GetRawButton(1)) {
+            drive.turn(45);
+            turned = true;
+        } else if (joystickMain.GetRawButton(2)) {
+            drive.turn(95);
+            turned = true;
+        } else if (joystickMain.GetRawButton(3)) {
+            drive.turn(-95);
+            turned = true;
+        } else if (joystickMain.GetRawButton(4)) {
+            drive.turn(180);
+            turned = true;
         }
+        //}
 
         return turned;
     }
