@@ -1,5 +1,5 @@
 #include <string>
-//#include <bits/stdc++.h>
+
 #include <iostream>
 
 #include <frc/TimedRobot.h>
@@ -13,22 +13,21 @@
 #include "frc/Preferences.h"
 #include "frc/Joystick.h"
 #include "frc/AnalogInput.h"
-//#include <opencv2>
-#include "cameraserver/CameraServer.h"
+
 #include "frc/Servo.h"
 #include "frc/PWM.h"
 
 #include "frc/WPILib.h"
-//#include "frc/NetworkTables/NetworkTable.h"
 
 #include <frc/Ultrasonic.h>
 #include <iostream>
 #include <cmath>
 #include <math.h>
-//#include "navx_mxp_cpp/MXP"
 
+#include "subsystems/Communicator.h"
 #include "AHRS.h"
 
+<<<<<<< HEAD:mecannum/src/main/cpp/Robot.cpp
 #include "Drivetrain.h"
 #include "Climber.h"
 #include "Elevator.h"
@@ -36,13 +35,12 @@
 using namespace Drivetrain;
 using namespace Climber;
 using namespace Elevator;
+=======
+using namespace Communicator;
+>>>>>>> d79e7dfe66b1dee5ec192e45f6e64e24ea867844:src/main/cpp/Robot.cpp
 
 using namespace frc;
 using namespace std;
-/*
-class Listener : public NetworkTable::ITableListener {
-    void valueChanged()
-}*/
 
 class Robot : public frc::TimedRobot {
 
@@ -106,16 +104,19 @@ public:
 
     bool inductiveSensorTriggered;
 
-    // int targetAngle = NULL;
     int targetAngle = 0;
 
     Timer *autoTimer = new Timer();
     AnalogInput inductiveSensor;
     AnalogInput servoInput;
 
+<<<<<<< HEAD:mecannum/src/main/cpp/Robot.cpp
     Drivetrain drive;
     Climber climber;
     Elevator elevator;
+=======
+    Communicator *comm = new Communicator();
+>>>>>>> d79e7dfe66b1dee5ec192e45f6e64e24ea867844:src/main/cpp/Robot.cpp
 
     // SETUP SECTION
     //
@@ -148,6 +149,7 @@ public:
         servoInput(1)
     
     {
+<<<<<<< HEAD:mecannum/src/main/cpp/Robot.cpp
     
         // cout << horzCamServo->GetAngle() << endl;
         //table = NetworkTable::GetTable("Vision");
@@ -162,6 +164,10 @@ public:
         elevator = new Elevator(liftTalon, grabTalon);
 
 
+=======
+        preferences = Preferences::GetInstance();
+        ahrs = new AHRS(SPI::Port::kMXP);
+>>>>>>> d79e7dfe66b1dee5ec192e45f6e64e24ea867844:src/main/cpp/Robot.cpp
     }
 
     void setup()
@@ -198,8 +204,6 @@ public:
 
         //setupEncoderTalon(RL);
         //setupEncoderTalon(FR);
-
-        CameraServer::GetInstance()->StartAutomaticCapture();
 
         timer->Start();
         resetGyro();
