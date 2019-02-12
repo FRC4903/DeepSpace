@@ -7,6 +7,7 @@
 #include <frc/smartDashboard/SendableChooser.h>
 #include <frc/smartDashboard/SmartDashboard.h>
 #include "ctre/Phoenix.h"
+#include "frc/DoubleSolenoid.h"
 #include "frc/DriverStation.h"
 #include <frc/Timer.h>
 #include "frc/Preferences.h"
@@ -50,13 +51,25 @@ public:
     Timer *timer = new Timer();
     const double LIFT_CONSTANT_COEFFICIENT = 10;
 
-    const int FRONT_LEFT_CIM = 1;
-    const int FRONT_RIGHT_CIM = 2;
-    const int REAR_LEFT_CIM = 3;
+    const int FRONT_LEFT_CIM = 6;
+    const int FRONT_RIGHT_CIM = 5;
+    const int REAR_LEFT_CIM = 7;
     const int REAR_RIGHT_CIM = 4;
+
+    const int FRONT_CLIMB_CIM = 1;
+    const int BACK_CLIMB_CIM = 2;
+    const int BACK_DRIVE_BAG = 3;
+
+    const int LIFT_ELEVATOR_CIM = 8;
+    const int TILT_ELEVATOR_REDLINE = 9;
+    const int INTAKE_ELEVATOR_BAG = 10;
+
+    const int CAM_SERVO_PORT = 8;
 
     Ultrasonic *ultraFront;
     TalonSRX FR, FL, RR, RL;
+    //TalonSRX frontClimb, backClimb, backDrive;
+    //TalonSRX liftTalon, intakeTalon, tiltTalon;
 
     AHRS *ahrs;
     double gyroAngDif = 0;
@@ -87,6 +100,12 @@ public:
 
     double j_x_L, j_y_L, j_x_R;
     double moderator;
+    
+    const double climbMod = 1.0;
+    const double backAngle = 10.0;
+    bool climbEnabled = false;
+
+    const double liftMod = 1.0;
 
     double beginningDiff;
 
@@ -120,11 +139,21 @@ public:
     Robot() :
         joystickMain(0),
         joystickMechanisms(1),
-        FR(2),
-        FL(1),
-        RR(4),
-        RL(3),
-        horzCamServo(8),
+
+        FR(FRONT_RIGHT_CIM),
+        FL(FRONT_LEFT_CIM),
+        RR(REAR_RIGHT_CIM),
+        RL(REAR_LEFT_CIM),
+
+        //frontClimb(FRONT_CLIMB_CIM),
+        //backClimb(BACK_CLIMB_CIM),
+        //backDrive(BACK_DRIVE_BAG),
+
+        //liftTalon(LIFT_ELEVATOR_CIM),
+        //intakeTalon(INTAKE_ELEVATOR_BAG),
+        //tiltTalon(TILT_ELEVATOR_REDLINE),
+
+        horzCamServo(CAM_SERVO_PORT),
         inductiveSensor(0),
         red(0),
         green(1),
@@ -133,8 +162,6 @@ public:
     
     {
     
-
-
 
         // cout << horzCamServo->GetAngle() << endl;
         //table = NetworkTable::GetTable("Vision");
@@ -577,6 +604,53 @@ public:
     void DisabledInit() {}
 
     void DisabledPeriodic() {}
+
+    /*void climbToggleDisable() {
+	climbEnabled = !climbEnabled;
+    }
+
+    void climbFrontDown(double moderator) {
+        frontClimb.Set(ControlMode::PercentOutput, climbMod * moderator);
+    }
+
+    void climbFrontUp(double moderator) {
+        frontClimb.Set(ControlMode::PercentOutput, - climbMod * moderator);
+    }
+
+    void climbBackDown(double moderator) {
+        backClimb.Set(ControlMode::PercentOutput, climbMod * moderator);
+    }
+
+    void climbBackUp(double moderator) {
+        backClimb.Set(ControlMode::PercentOutput, - climbMod * moderator);
+    }
+
+    void climbBothDown(double moderator) {
+        frontClimb.Set(ControlMode::PercentOutput, cos(backAngle) * climbMod * moderator);
+        backClimb.Set(ControlMode::PercentOutput, climbMod * moderator);
+    }
+
+    void climbDrive(double moderator) {
+        backDrive.Set(ControlMode::PercentOutput, moderator);
+    }
+
+
+    void elevatorlift(double moderator) {
+	    liftTalon.Set(ControlMode::PercentOutput, liftMod * moderator);
+    }
+
+    void elevatorDescend(double moderator) {
+        liftTalon.Set(ControlMode::PercentOutput, - liftMod * moderator);
+    }
+
+
+    void elevatorInball(double moderator) {
+        intakeTalon.Set(ControlMode::PercentOutput, liftMod * moderator);
+    }
+
+    void elevatorOutball(double moderator) {
+        intakeTalon.Set(ControlMode::PercentOutput, - liftMod * moderator);
+    }*/
 };
 
 START_ROBOT_CLASS(Robot)
