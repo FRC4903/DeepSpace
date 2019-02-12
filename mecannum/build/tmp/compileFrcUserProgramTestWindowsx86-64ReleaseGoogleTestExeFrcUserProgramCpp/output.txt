@@ -1,0 +1,8 @@
+See file:///C:/Users/FRC%20Team%204903/3D%20Objects/Documents/vscodeprojects/DeepSpace/mecannum/build/tmp/compileFrcUserProgramTestWindowsx86-64ReleaseGoogleTestExeFrcUserProgramCpp/output.txt for all output for compileFrcUserProgramTestWindowsx86-64ReleaseGoogleTestExeFrcUserProgramCpp.
+compiling Robot.cpp successful.
+Robot.cpp
+c:\users\frc team 4903\3d objects\documents\vscodeprojects\deepspace\mecannum\src\main\cpp\robot.cpp(332) : warning C4700: uninitialized local variable 'FRpow' used
+c:\users\frc team 4903\3d objects\documents\vscodeprojects\deepspace\mecannum\src\main\cpp\robot.cpp(332) : warning C4700: uninitialized local variable 'FLpow' used
+c:\users\frc team 4903\3d objects\documents\vscodeprojects\deepspace\mecannum\src\main\cpp\robot.cpp(332) : warning C4700: uninitialized local variable 'RRpow' used
+
+Finished compileFrcUserProgramTestWindowsx86-64ReleaseGoogleTestExeFrcUserProgramCpp, see full log file:///C:/Users/FRC%20Team%204903/3D%20Objects/Documents/vscodeprojects/DeepSpace/mecannum/build/tmp/compileFrcUserProgramTestWindowsx86-64ReleaseGoogleTestExeFrcUserProgramCpp/output.txt.

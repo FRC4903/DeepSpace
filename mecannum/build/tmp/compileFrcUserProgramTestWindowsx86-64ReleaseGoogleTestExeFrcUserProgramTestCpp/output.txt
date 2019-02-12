@@ -1,0 +1,5 @@
+See file:///C:/Users/FRC%20Team%204903/3D%20Objects/Documents/vscodeprojects/DeepSpace/mecannum/build/tmp/compileFrcUserProgramTestWindowsx86-64ReleaseGoogleTestExeFrcUserProgramTestCpp/output.txt for all output for compileFrcUserProgramTestWindowsx86-64ReleaseGoogleTestExeFrcUserProgramTestCpp.
+compiling main.cpp successful.
+main.cpp
+
+Finished compileFrcUserProgramTestWindowsx86-64ReleaseGoogleTestExeFrcUserProgramTestCpp, see full log file:///C:/Users/FRC%20Team%204903/3D%20Objects/Documents/vscodeprojects/DeepSpace/mecannum/build/tmp/compileFrcUserProgramTestWindowsx86-64ReleaseGoogleTestExeFrcUserProgramTestCpp/output.txt.

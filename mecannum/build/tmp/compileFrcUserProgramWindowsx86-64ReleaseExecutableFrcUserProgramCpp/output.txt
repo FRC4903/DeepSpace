@@ -1,0 +1,6 @@
+See file:///C:/Users/FRC%20Team%204903/3D%20Objects/Documents/vscodeprojects/DeepSpace/mecannum/build/tmp/compileFrcUserProgramWindowsx86-64ReleaseExecutableFrcUserProgramCpp/output.txt for all output for compileFrcUserProgramWindowsx86-64ReleaseExecutableFrcUserProgramCpp.
+compiling Robot.cpp failed.
+Robot.cpp
+C:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\src\main\cpp\Robot.cpp(147): error C2065: 'table': undeclared identifier
+
+Finished compileFrcUserProgramWindowsx86-64ReleaseExecutableFrcUserProgramCpp, see full log file:///C:/Users/FRC%20Team%204903/3D%20Objects/Documents/vscodeprojects/DeepSpace/mecannum/build/tmp/compileFrcUserProgramWindowsx86-64ReleaseExecutableFrcUserProgramCpp/output.txt.

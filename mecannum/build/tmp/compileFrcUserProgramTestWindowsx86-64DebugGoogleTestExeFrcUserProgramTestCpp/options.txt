@@ -1,0 +1,32 @@
+/TP
+/nologo
+/c
+/DDEBUG
+/DRUNNING_FRC_TESTS
+/EHsc
+/DNOMINMAX
+/Zi
+/FS
+/Zc:inline
+/Od
+/MDd
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\src\frcUserProgramTest\headers"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\wpilibc-cpp-2019.1.1-headers.zip_bbc5901b0e22ac527e7d642f2ec68009"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\hal-cpp-2019.1.1-headers.zip_1bbfce5e2e0c140b468a547dbc8c30e1"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\wpiutil-cpp-2019.1.1-headers.zip_09b38849dbdfa883c4be908731924be2"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\ntcore-cpp-2019.1.1-headers.zip_de8bb156e7c972a7498927ac56d827f7"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\cscore-cpp-2019.1.1-headers.zip_8872a682a8b282d24272d8aebeb3f812"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\cameraserver-cpp-2019.1.1-headers.zip_8e6098f7e4e3b331e0504d2d66cebd71"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\opencv-cpp-3.4.4-4-headers.zip_ed19d56be47d37c8193b8f0377a9cfe6"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\googletest-1.8.0-4-4e4df22-headers.zip_6df6026f32d57a167443a587edfa5107"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\navx-cpp-3.1.344-headers.zip_744b022e6074b8136dc4cb47e25c93fd"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\wpiapi-cpp-5.12.0-headers.zip_29daa6d91100a3e64a6c5c507f77fd54"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\api-cpp-5.12.0-headers.zip_4c0f1181ce667c2b1da6d536e53054ec"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\cci-5.12.0-headers.zip_dcc0606199f9f03e2afc8c79f610ebba"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\build\tmp\expandedArchives\core-5.12.0-headers.zip_318ff6fc4a9e78b523ef7a1e4e5003aa"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\src\main\include"
+"/IC:\Users\FRC Team 4903\3D Objects\Documents\vscodeprojects\DeepSpace\mecannum\src\main\cpp"
+"/IC:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\include"
+"/IC:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\um"
+"/IC:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\shared"
+"/IC:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt"
