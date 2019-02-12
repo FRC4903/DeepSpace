@@ -7,43 +7,24 @@
 #include <frc/smartDashboard/SendableChooser.h>
 #include <frc/smartDashboard/SmartDashboard.h>
 #include "ctre/Phoenix.h"
-#include "frc/DoubleSolenoid.h"
 #include "frc/DriverStation.h"
 #include <frc/Timer.h>
 #include "frc/Preferences.h"
 #include "frc/Joystick.h"
 #include "frc/AnalogInput.h"
-//#include <opencv2>
-#include "cameraserver/CameraServer.h"
 #include "frc/Servo.h"
 #include "frc/PWM.h"
 
 #include "frc/WPILib.h"
-#include "NetworkTables/NetworkTable.h"
-#include "NetworkTables/NetworkTableInstance.h"
 
 #include <frc/Ultrasonic.h>
 #include <iostream>
 #include <cmath>
 #include <math.h>
-//#include "navx_mxp_cpp/MXP"
-
 #include "AHRS.h"
-
-//#include "Communicator.h"
-
-//#include "NetworkTables/NetworkTable.h"
-
-
-//#include "TestMech.h"
 
 using namespace frc;
 using namespace std;
-//using namespace NetworkTable;
-/*
-class Listener : public NetworkTable::ITableListener {
-    void valueChanged()
-}*/
 
 class Robot : public frc::TimedRobot {
 
@@ -164,9 +145,7 @@ public:
     
 
         // cout << horzCamServo->GetAngle() << endl;
-        //table = NetworkTable::GetTable("Vision");
 
-        //NetworkTable::AddTableListener("test", listener, true);
 
         preferences = Preferences::GetInstance();
         ahrs = new AHRS(SPI::Port::kMXP);
@@ -284,7 +263,6 @@ public:
     void TeleopInit() {
         //driveSystemBrakeMode(true);  //DRIVING
 
-        //cout << "HEllo" << endl;
 
         FR.SetNeutralMode(NeutralMode::Brake);
         FL.SetNeutralMode(NeutralMode::Brake);
