@@ -61,8 +61,8 @@ class Robot : public TimedRobot {
   bool ramping_down = false;
 
   double level1 = 0;
-  double level2 = 400000; 
-  double level3 = 800000;
+  double level2 = 120000; 
+  double level3 = 435000;
   // int pos = encoder.Get();
   double target;
   int progression = 0;
@@ -128,16 +128,24 @@ class Robot : public TimedRobot {
 
     //cout << encoder.Get() << endl;
 
-    if (!inductiveSensor) {
-      talonLeft.Set(ControlMode::PercentOutput, getx);
+    // if (gety < 0 && encoder.Get() < 100000) {
+    //   talonLeft.Set(ControlMode::PercentOutput, getx);
+    //  talonRight.Set(ControlMode::PercentOutput, gety);
+    // }
+    // else if (gety > 0 && encoder.Get() > 1000){
+    //    talonLeft.Set(ControlMode::PercentOutput, getx);
+    //   talonRight.Set(ControlMode::PercentOutput, gety);
+    // }
+    
+    // else{
+    //   talonLeft.Set(ControlMode::PercentOutput, 0);
+    //   talonRight.Set(ControlMode::PercentOutput, 0);
+    // }
+
+    talonLeft.Set(ControlMode::PercentOutput, getx);
       talonRight.Set(ControlMode::PercentOutput, gety);
-    }
     
-    else{
-      talonLeft.Set(ControlMode::PercentOutput, 0);
-      talonRight.Set(ControlMode::PercentOutput, 0);
-    }
-    
+    cout << encoder.Get() << endl;
     
     //solenoids
     // cout << servoInput.GetValue() * 0.47 - 33.4 << endl;
@@ -276,7 +284,7 @@ class Robot : public TimedRobot {
     
     
     if (progress <= 0.5){
-      talonLeft.Set(ControlMode::PercentOutput, speed); 
+      talonLeft.Set(ControlMode::PercentOutput, speed / 4); 
     }
     
 
