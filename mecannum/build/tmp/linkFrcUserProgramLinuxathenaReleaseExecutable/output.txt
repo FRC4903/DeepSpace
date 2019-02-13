@@ -1,4 +1,0 @@
-See file:///C:/Users/FRC%20Team%204903/3D%20Objects/Documents/vscodeprojects/DeepSpace/mecannum/build/tmp/linkFrcUserProgramLinuxathenaReleaseExecutable/output.txt for all output for linkFrcUserProgramLinuxathenaReleaseExecutable.
-linking frcUserProgram successful.
-
-Finished linkFrcUserProgramLinuxathenaReleaseExecutable, see full log file:///C:/Users/FRC%20Team%204903/3D%20Objects/Documents/vscodeprojects/DeepSpace/mecannum/build/tmp/linkFrcUserProgramLinuxathenaReleaseExecutable/output.txt.
