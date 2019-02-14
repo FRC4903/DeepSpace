@@ -1,5 +1,4 @@
 #include <string>
-//#include <bits/stdc++.h>
 #include <iostream>
 
 #include <frc/TimedRobot.h>
@@ -29,7 +28,8 @@ using namespace std;
 class Robot : public frc::TimedRobot {
 
 public:
-    Timer *timer = new Timer();
+
+    // CONSTANTS
     const double LIFT_CONSTANT_COEFFICIENT = 10;
 
     const int FRONT_LEFT_CIM = 6;
@@ -45,20 +45,31 @@ public:
     const int TILT_ELEVATOR_REDLINE = 8;
     const int INTAKE_ELEVATOR_BAG = 9;
 
-    const int CAM_SERVO_PORT = 8;
+    const double climbMod = 1.0;
+    const double backAngle = 10.0;
 
+    // TIMERS
+    Timer *timer = new Timer();
+
+    // ULTRASONICS
     Ultrasonic *ultraFront;
+
+    // TALONS
     TalonSRX FR, FL, RR, RL;
     //TalonSRX frontClimb, backClimb, backDrive;
     //TalonSRX liftTalon, intakeTalon, tiltTalon;
 
+    // GYRO
     AHRS *ahrs;
     double gyroAngDif = 0;
+    bool done = false;
 
+    // LED STRIPS
     DigitalOutput red;
     DigitalOutput green;
     DigitalOutput blue;
 
+    // ENCODERS
     double rightEncoderConstant, leftEncoderConstant;
     bool initialValueSet = false;
     double initialLiftPosition = 0;
@@ -66,14 +77,12 @@ public:
     double leftEncoderInitial = 0.0;
     double rightEncoderInitial = 0.0;
 
-    Servo horzCamServo;
-
-    double horzCamServoAng = 0.5;
-
+    // ENCODER PID
     int kTimeoutMs = 10;
     int kPIDLoopIdx = 0;
     int kSlotIdx = 0;
 
+    // INPUT
     double initialValTalon;
     Joystick joystickMain;
     Joystick joystickMechanisms;
@@ -81,40 +90,19 @@ public:
 
     double j_x_L, j_y_L, j_x_R;
     double moderator;
-    
-    const double climbMod = 1.0;
-    const double backAngle = 10.0;
+
     bool climbEnabled = false;
 
     const double liftMod = 1.0;
 
     double beginningDiff;
 
-    string gameData;
     Preferences* preferences;
 
-    bool done = false;
-
     bool inductiveSensorTriggered;
-
-    // int targetAngle = NULL;
     int targetAngle = 0;
 
-    Timer *autoTimer = new Timer();
     AnalogInput inductiveSensor;
-    AnalogInput servoInput;
-
-
-    
-    // SETUP SECTION
-    //
-    //
-    //      FR.SetNeutralMode(NeutralMode::Brake);
-    //      FL.SetNeutralMode(NeutralMode::Brake);
-    //      RR.SetNeutralMode(NeutralMode::Brake);
-    //      RL.SetNeutralMode(NeutralMode::Brake);
-
-    //      //FR(FRONT_RIGHT_CIM), FL(FRONT_LEFT_CIM), RR(REAR_RIGHT_CIM), RL(REAR_LEFT_CIM)
 
     Robot() :
         joystickMain(0),
@@ -133,31 +121,26 @@ public:
         //intakeTalon(INTAKE_ELEVATOR_BAG),
         //tiltTalon(TILT_ELEVATOR_REDLINE),
 
-        horzCamServo(CAM_SERVO_PORT),
         inductiveSensor(0),
         red(0),
         green(1),
-        blue(2),
-        servoInput(1)
+        blue(2)
     
     {
-
-
-        // cout << horzCamServo->GetAngle() << endl;
-
-
         preferences = Preferences::GetInstance();
         ahrs = new AHRS(SPI::Port::kMXP);
-        // table->GetEntry("Vision");
+    }
 
-        // driverStation = DriverStation::GetInstance();
+
+    void setLED(bool r, bool g, bool b) {
+        red.Set(!r);
+        green.Set(!g);
+        blue.Set(!g);
+
     }
 
     void setup()
     {
-
-
-
         beginningDiff = -1000000;
         moderator = 0.1;
         timer->Start();
@@ -180,14 +163,6 @@ public:
     }
 
     void RobotInit() {
-
-        
-        //cout << "HEADING: " << comm->targetPosition.heading << endl;
-
-        //TestMech hello;
-
-        autoTimer->Start();
-
         ultraFront = new Ultrasonic(3, 4);
         ultraFront->SetAutomaticMode(true);
 
@@ -200,41 +175,16 @@ public:
         resetGyro();
     }
 
-// Autonomous SECTION
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-
     void TestInit() {}
 
     void TestPeriodic() {}
 
     void AutonomousInit() {
-        resetGyro();
-        gameData = DriverStation::GetInstance().GetGameSpecificMessage();
-
-        //driveSystemBrakeMode(false);
-
-        FR.SetNeutralMode(NeutralMode::Brake);
-        FL.SetNeutralMode(NeutralMode::Brake);
-        RR.SetNeutralMode(NeutralMode::Brake);
-        RL.SetNeutralMode(NeutralMode::Brake);
-
-        done= false;
-
-        autoTimer->Reset();
 
     }
 
     void AutonomousPeriodic() {
-        if(gameData.length() > 0 && !done) {}
+
     }
 
     void resetEncoder() {
@@ -256,19 +206,9 @@ public:
         return (double)(val - initialValTalon)/2000*360;
     }*/
 
-    void setLED(bool r, bool g, bool b) {
-        red.Set(!r);
-        green.Set(!g);
-        blue.Set(!g);
-
-    }
-
-// TELEOP SECTION
-
 
     void TeleopInit() {
         //driveSystemBrakeMode(true);  //DRIVING
-
 
         FR.SetNeutralMode(NeutralMode::Brake);
         FL.SetNeutralMode(NeutralMode::Brake);
@@ -285,7 +225,6 @@ public:
         } else {
             setLED(false, false, true);
         }
-
     }
 
     void TeleopPeriodic() {
@@ -296,10 +235,6 @@ public:
 
     void driveSystem()
     {
-
-
-
-        cameraSwivel();
 
         bool turned = buttonTurn();
         ahrs->UpdateDisplacement(ahrs->GetWorldLinearAccelX(), ahrs->GetWorldLinearAccelY(), 50, ahrs->IsMoving());
@@ -393,8 +328,6 @@ public:
 		}
     }
 
-
-
     double getRealAngle(double degAng) {
         if (degAng < 0) {degAng += getPi() * 2; }
 
@@ -404,7 +337,6 @@ public:
     double getPi() {
         return acos(-1);
     }
-
 
     double getWheelPower (double ang, bool A) {
 
@@ -509,25 +441,6 @@ public:
     void setLeft(double val) {  
         RL.Set(ControlMode::PercentOutput, val);
         FL.Set(ControlMode::PercentOutput, val);        
-    }
-
-    void cameraSwivel () 
-    {
-        inductiveSensorTriggered = inductiveSensorState();
-        
-        if (!inductiveSensorTriggered){
-            if (45 <= joystickMechanisms.GetPOV(0) && joystickMechanisms.GetPOV(0) <= 135) {
-                horzCamServoAng += 0.025;
-            } else if (225 <= joystickMechanisms.GetPOV(0) && joystickMechanisms.GetPOV(0) <= 315) {
-                horzCamServoAng -= 0.025;
-            } 
-
-            if (joystickMechanisms.GetRawButton(9)) {
-                horzCamServoAng = 0.5;
-            } 
-
-            //horzCamServo.Set(horzCamServoAng);
-        }
     }
 
     bool inductiveSensorState(){
