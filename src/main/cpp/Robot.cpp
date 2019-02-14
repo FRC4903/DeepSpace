@@ -141,7 +141,7 @@ public:
         servoInput(1)
     
     {
-    
+
 
         // cout << horzCamServo->GetAngle() << endl;
 
@@ -150,7 +150,7 @@ public:
         ahrs = new AHRS(SPI::Port::kMXP);
         // table->GetEntry("Vision");
 
-//      driverStation = DriverStation::GetInstance();
+        // driverStation = DriverStation::GetInstance();
     }
 
     void setup()
@@ -256,6 +256,13 @@ public:
         return (double)(val - initialValTalon)/2000*360;
     }*/
 
+    void setLED(bool r, bool g, bool b) {
+        red.Set(!r);
+        green.Set(!g);
+        blue.Set(!g);
+
+    }
+
 // TELEOP SECTION
 
 
@@ -271,6 +278,14 @@ public:
         resetGyro();
         timer->Start();
         timer->Reset();
+
+        // Set LED strip to alliance color
+        if (DriverStation::GetInstance().GetAlliance() == DriverStation::kRed) {
+            setLED(true, false, false);
+        } else {
+            setLED(false, false, true);
+        }
+
     }
 
     void TeleopPeriodic() {
@@ -282,16 +297,7 @@ public:
     void driveSystem()
     {
 
-        if (inductiveSensorState()) {
 
-            red.Set(0);
-            green.Set(1);
-            blue.Set(1);
-        } else {
-            red.Set(1);
-            green.Set(0);
-            blue.Set(1);
-        }
 
         cameraSwivel();
 
