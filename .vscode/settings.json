@@ -17,7 +17,8 @@
     "bitset": "cpp",
     "set": "cpp",
     "ostream": "cpp",
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "cmath": "cpp"
   },
   "C_Cpp.errorSquiggles": "Enabled"
 }

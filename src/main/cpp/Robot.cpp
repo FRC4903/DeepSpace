@@ -56,8 +56,8 @@ public:
 
     // TALONS
     TalonSRX FR, FL, RR, RL;
-    //TalonSRX frontClimb, backClimb, backDrive;
-    //TalonSRX liftTalon, intakeTalon, tiltTalon;
+    TalonSRX frontClimb, rearClimb, rearDrive;
+    TalonSRX liftTalon, intakeTalon, tiltTalon;
 
     // GYRO
     AHRS *ahrs;
@@ -70,12 +70,12 @@ public:
     DigitalOutput blue;
 
     // ENCODERS
-    double rightEncoderConstant, leftEncoderConstant;
-    bool initialValueSet = false;
-    double initialLiftPosition = 0;
+    // double rightEncoderConstant, leftEncoderConstant;
+    // bool initialValueSet = false;
+    // double initialLiftPosition = 0;
 
-    double leftEncoderInitial = 0.0;
-    double rightEncoderInitial = 0.0;
+    // double leftEncoderInitial = 0.0;
+    // double rightEncoderInitial = 0.0;
 
     // ENCODER PID
     int kTimeoutMs = 10;
@@ -94,8 +94,11 @@ public:
     bool climbEnabled = false;
 
     const double liftMod = 1.0;
+    const double tiltMod = 1.0;
 
     double beginningDiff;
+
+    int alt = 0;
 
     Preferences* preferences;
 
@@ -113,13 +116,13 @@ public:
         RR(REAR_RIGHT_CIM),
         RL(REAR_LEFT_CIM),
 
-        //frontClimb(FRONT_CLIMB_CIM),
-        //backClimb(BACK_CLIMB_CIM),
-        //backDrive(BACK_DRIVE_BAG),
+        frontClimb(FRONT_CLIMB_CIM),
+        rearClimb(BACK_CLIMB_CIM),
+        rearDrive(BACK_DRIVE_BAG),
 
-        //liftTalon(LIFT_ELEVATOR_CIM),
-        //intakeTalon(INTAKE_ELEVATOR_BAG),
-        //tiltTalon(TILT_ELEVATOR_REDLINE),
+        liftTalon(LIFT_ELEVATOR_CIM),
+        intakeTalon(INTAKE_ELEVATOR_BAG),
+        tiltTalon(TILT_ELEVATOR_REDLINE),
 
         inductiveSensor(0),
         red(0),
@@ -136,7 +139,6 @@ public:
         red.Set(!r);
         green.Set(!g);
         blue.Set(!g);
-
     }
 
     void setup()
@@ -188,8 +190,8 @@ public:
     }
 
     void resetEncoder() {
-        leftEncoderInitial = RL.GetSelectedSensorPosition(kPIDLoopIdx);
-        rightEncoderInitial = RL.GetSelectedSensorPosition(kPIDLoopIdx);
+        // leftEncoderInitial = RL.GetSelectedSensorPosition(kPIDLoopIdx);
+        // rightEncoderInitial = RL.GetSelectedSensorPosition(kPIDLoopIdx);
     }
 
 /*  double getLeftEncoderValue() {
@@ -214,6 +216,9 @@ public:
         FL.SetNeutralMode(NeutralMode::Brake);
         RR.SetNeutralMode(NeutralMode::Brake);
         RL.SetNeutralMode(NeutralMode::Brake);
+        frontClimb.SetNeutralMode(NeutralMode::Brake);
+        rearClimb.SetNeutralMode(NeutralMode::Brake);
+        
 
         resetGyro();
         timer->Start();
@@ -237,95 +242,152 @@ public:
     {
 
         bool turned = buttonTurn();
-        ahrs->UpdateDisplacement(ahrs->GetWorldLinearAccelX(), ahrs->GetWorldLinearAccelY(), 50, ahrs->IsMoving());
-		
+        ahrs->UpdateDisplacement(ahrs->GetWorldLinearAccelX(), ahrs->GetWorldLinearAccelY(), ahrs->GetActualUpdateRate(), ahrs->IsMoving());
+		alt += ahrs->GetDisplacementZ();
+        cout << alt << endl;
+
         if (joystickMain.GetRawButton(6)) // if green a button is pressed
-            moderator = 0.85; // makes robot go faster .. 1.0 for carpet
+            moderator = 0.75; // makes robot go faster .. 1.0 for carpet
         else if (joystickMain.GetRawButton(5)) // if red b button is pressed
-            moderator = 0.5; // make it really slow
+            moderator = 0.4; // make it really slow
         else // base case let it be half speed
-            moderator = 0.75; // limits the range given from the controller // 0.85 for carpet
+            moderator = 0.6; // limits the range given from the controller // 0.85 for carpet
 
 		if (!turned) {
-			j_x_L = joystickMain.GetRawAxis(0);
-			j_y_L = joystickMain.GetRawAxis(1);
-
-			j_x_R = joystickMain.GetRawAxis(4);
-
-			if((j_x_L < 0 && j_x_L >= -0.05) || (j_x_L > 0 && j_x_L <= 0.05)) { j_x_L = 0; }
-			if((j_y_L < 0 && j_y_L >= -0.05) || (j_y_L > 0 && j_y_L <= 0.05)) { j_y_L = 0; }
-			if((j_x_R < 0 && j_x_R >= -0.05) || (j_x_R > 0 && j_x_R <= 0.05)) { j_x_R = 0; }
-
-			double FRpow, FLpow, RRpow, RLpow = 0;
-			bool manTurning = false;
-			bool manMoving = false;
-
-            double safeDist = 8 * (FRpow + FLpow + RLpow + RRpow + 1);
-            //cout << "SAFE" << safeDist << endl;
-
-            
-            //if (!(j_y_L < 0 && ultraFront->GetRangeInches() < safeDist)) {
-                cout << j_x_L << " " << j_y_L << endl;
-                if (j_x_L != 0 || j_y_L != 0){
-                    manMoving = true;
-
-                    double mag = hypot(j_x_L, j_y_L);
-                    double calcAng = getRealAngle(getPi() - atan2(j_y_L, j_x_L));
-                    //double gAng = getRealAngle(gyro.GetAngle());
-                    double gAng = 0;
-
-                    FRpow += ( - getWheelPower(calcAng - gAng, true) * mag * moderator );
-                    FLpow += ( - getWheelPower(calcAng - gAng, false) * mag * moderator );
-                    RRpow += getWheelPower(calcAng - gAng, false) * mag * moderator;
-                    RLpow += getWheelPower(calcAng - gAng, true) * mag * moderator;
-       
-                } 
-
-                if (j_x_R != 0) {
-                    manTurning = true;
-
-                    double turnMod = 1.0;
-
-                    if (! manMoving) {
-                        turnMod = 0.75;
-                    }
-                
-                    FRpow += j_x_R * turnMod;
-                    FLpow += j_x_R * turnMod;
-                    RRpow += j_x_R * turnMod;
-                    RLpow += j_x_R * turnMod;
-                    // FR.Set(ControlMode::PercentOutput, j_x_R * moderator);
-                    // FL.Set(ControlMode::PercentOutput, j_x_R * moderator);
-                    // RR.Set(ControlMode::PercentOutput, j_x_R * moderator);
-                    // RL.Set(ControlMode::PercentOutput, j_x_R * moderator);
-                    /*
-                    setFrontRight(- j_x_R * moderator);
-                    setFrontLeft(j_x_R * moderator);
-                    setRearRight(- j_x_R * moderator);
-                    setRearLeft(j_x_R * moderator);*/
-
-                } 
-                if (manMoving && manTurning) {
-                    FRpow /= 2;
-                    FLpow /= 2;
-                    RRpow /= 2;
-                    RLpow /= 2;
-                }
-            // } else {
-            //     //cout << "STOPPED" << endl;
-
-            //     FRpow = 0;
-            //     FLpow = 0;
-            //     RRpow = 0;
-            //     RLpow = 0;
-            // }
-            
-			FR.Set(ControlMode::PercentOutput, FRpow * moderator);
-			FL.Set(ControlMode::PercentOutput, FLpow * moderator);
-			RR.Set(ControlMode::PercentOutput, RRpow * moderator);
-			RL.Set(ControlMode::PercentOutput, RLpow * moderator);
-			
+            roboMove();	
 		}
+
+        //roboMechanisms();
+    }
+
+    void roboMove() {
+        j_x_L = joystickMain.GetRawAxis(0);
+        j_y_L = joystickMain.GetRawAxis(1);
+
+        j_x_R = joystickMain.GetRawAxis(4);
+
+        if((j_x_L < 0 && j_x_L >= -0.05) || (j_x_L > 0 && j_x_L <= 0.05)) { j_x_L = 0; }
+        if((j_y_L < 0 && j_y_L >= -0.05) || (j_y_L > 0 && j_y_L <= 0.05)) { j_y_L = 0; }
+        if((j_x_R < 0 && j_x_R >= -0.05) || (j_x_R > 0 && j_x_R <= 0.05)) { j_x_R = 0; }
+
+        double FRpow, FLpow, RRpow, RLpow = 0;
+        bool manTurning = false;
+        bool manMoving = false;
+
+        double safeDist = 8 * (FRpow + FLpow + RLpow + RRpow + 1);
+        //cout << "SAFE" << safeDist << endl;
+
+        
+        
+        //if (!(j_y_L < 0 && ultraFront->GetRangeInches() < safeDist)) {
+        //cout << j_x_L << " " << j_y_L << endl;
+        if (j_x_L != 0 || j_y_L != 0){
+            manMoving = true;
+
+            double mag = hypot(j_x_L, j_y_L);
+            double calcAng = getRealAngle(getPi() - atan2(j_y_L, j_x_L));
+            //double gAng = getRealAngle(gyro.GetAngle());
+            double gAng = 0;
+
+            FRpow += ( - getWheelPower(calcAng - gAng, true) * mag * moderator );
+            FLpow += ( - getWheelPower(calcAng - gAng, false) * mag * moderator );
+            RRpow += getWheelPower(calcAng - gAng, false) * mag * moderator;
+            RLpow += getWheelPower(calcAng - gAng, true) * mag * moderator;
+
+        } 
+
+        if (j_x_R != 0) {
+            manTurning = true;
+
+            double turnMod = 1.0;
+
+            if (! manMoving) {
+                turnMod = 0.75;
+            }
+        
+            FRpow += j_x_R * turnMod;
+            FLpow += j_x_R * turnMod;
+            RRpow += j_x_R * turnMod;
+            RLpow += j_x_R * turnMod;
+            // FR.Set(ControlMode::PercentOutput, j_x_R * moderator);
+            // FL.Set(ControlMode::PercentOutput, j_x_R * moderator);
+            // RR.Set(ControlMode::PercentOutput, j_x_R * moderator);
+            // RL.Set(ControlMode::PercentOutput, j_x_R * moderator);
+            /*
+            setFrontRight(- j_x_R * moderator);
+            setFrontLeft(j_x_R * moderator);
+            setRearRight(- j_x_R * moderator);
+            setRearLeft(j_x_R * moderator);*/
+
+            } 
+            if (manMoving && manTurning) {
+                FRpow /= 2;
+                FLpow /= 2;
+                RRpow /= 2;
+                RLpow /= 2;
+            }
+        // } else {
+        //     //cout << "STOPPED" << endl;
+
+        //     FRpow = 0;
+        //     FLpow = 0;
+        //     RRpow = 0;
+        //     RLpow = 0;
+        // }
+        
+        FR.Set(ControlMode::PercentOutput, FRpow * moderator);
+        FL.Set(ControlMode::PercentOutput, FLpow * moderator);
+        RR.Set(ControlMode::PercentOutput, RRpow * moderator);
+        RL.Set(ControlMode::PercentOutput, RLpow * moderator);
+    }
+
+    void roboMechanisms() {
+
+        //doElevatorMechanism();
+        //doClimbMechanism();
+    }
+
+    void doElevatorMechanism() {
+        moveElevator(joystickMechanisms.GetRawAxis(1));
+        intakeElevator(joystickMechanisms.GetRawAxis(2));
+
+        if (joystickMechanisms.GetRawButton(3)) {
+            //hatchOut();
+        } else if (joystickMechanisms.GetRawButton(1)) {
+            //hatchIn();
+        }
+
+        if (joystickMechanisms.GetRawButton(4)) {
+            //tiltOut();
+        } else if (joystickMechanisms.GetRawButton(2)) {
+            //tiltIn();
+        }  
+    }
+
+    void doClimbMechanism() {
+        /*if (joystickMechanisms.GetRawButton(6)) {
+            climbFrontUp();
+        } else if (joystickMechanisms.GetRawButton(8)) {
+            climbFrontDown();
+        }
+
+        if (joystickMechanisms.GetRawButton(5)) {
+            climbRearUp();
+        } else if (joystickMechanisms.GetRawButton(7)) {
+            climbRearDown();
+        }  
+
+        if (joystickMechanisms.GetRawButton(10)) {
+            climbBothDown();
+        }
+
+        if (joystickMechanisms.GetPOV() == 315 || joystickMechanisms.GetPOV() == 0 || joystickMechanisms.GetPOV() == 45) {
+            climbDriveForward();
+        } else if (joystickMechanisms.GetPOV() >= 135 || joystickMechanisms.GetPOV() <= 225) {
+            climbDriveReverse();
+        }  */
+
+        climbBothDown(joystickMechanisms.GetRawAxis(1));
     }
 
     double getRealAngle(double degAng) {
@@ -378,8 +440,6 @@ public:
                 break;
             }
         }
-
-		
     }
 
     void turnTo(double moveAngle) 
@@ -420,13 +480,14 @@ public:
             } else if (joystickMain.GetRawButton(4)) {
                 turn(180);
                 turned = true;
-            }else if (joystickMain.GetRawButton(5)) {
-                turn(-1);
-                turned = true;
-            }else if (joystickMain.GetRawButton(6)) {
-                turn(1);
-                turned = true;
             }
+            // }else if (joystickMain.GetRawButton(5)) {
+            //     turn(-1);
+            //     turned = true;
+            // }else if (joystickMain.GetRawButton(6)) {
+            //     turn(1);
+            //     turned = true;
+            // }
 
         }
 
@@ -481,52 +542,52 @@ public:
 
     void DisabledPeriodic() {}
 
-    /*void climbToggleDisable() {
-	climbEnabled = !climbEnabled;
+    void climbToggleDisable() {
+	    climbEnabled = !climbEnabled;
     }
 
-    void climbFrontDown(double moderator) {
-        frontClimb.Set(ControlMode::PercentOutput, climbMod * moderator);
+    void climbFrontDown() {
+        frontClimb.Set(ControlMode::PercentOutput, climbMod);
     }
 
-    void climbFrontUp(double moderator) {
-        frontClimb.Set(ControlMode::PercentOutput, - climbMod * moderator);
+    void climbFrontUp() {
+        frontClimb.Set(ControlMode::PercentOutput, - climbMod);
     }
 
-    void climbBackDown(double moderator) {
-        backClimb.Set(ControlMode::PercentOutput, climbMod * moderator);
+    void climbRearDown() {
+        rearClimb.Set(ControlMode::PercentOutput, climbMod);
     }
 
-    void climbBackUp(double moderator) {
-        backClimb.Set(ControlMode::PercentOutput, - climbMod * moderator);
+    void climbRearUp() {
+        rearClimb.Set(ControlMode::PercentOutput, - climbMod);
     }
 
-    void climbBothDown(double moderator) {
-        frontClimb.Set(ControlMode::PercentOutput, cos(backAngle) * climbMod * moderator);
-        backClimb.Set(ControlMode::PercentOutput, climbMod * moderator);
+    void climbBothDown() {
+        frontClimb.Set(ControlMode::PercentOutput, cos(backAngle) * climbMod);
+        rearClimb.Set(ControlMode::PercentOutput, climbMod);
     }
 
-    void climbDrive(double moderator) {
-        backDrive.Set(ControlMode::PercentOutput, moderator);
+    void climbBothDown(double pow) {
+        frontClimb.Set(ControlMode::PercentOutput,  1.4*climbMod * pow);
+        rearClimb.Set(ControlMode::PercentOutput, climbMod * pow);
+        //cout << ahrs->GetRoll() << endl;
     }
 
-
-    void elevatorlift(double moderator) {
-	    liftTalon.Set(ControlMode::PercentOutput, liftMod * moderator);
+    void climbDriveForward() {
+        rearDrive.Set(ControlMode::PercentOutput, 0.5);
     }
 
-    void elevatorDescend(double moderator) {
-        liftTalon.Set(ControlMode::PercentOutput, - liftMod * moderator);
+    void climbDriveReverse() {
+         rearDrive.Set(ControlMode::PercentOutput, - 0.5);
     }
 
-
-    void elevatorInball(double moderator) {
-        intakeTalon.Set(ControlMode::PercentOutput, liftMod * moderator);
+    void moveElevator(double pow) {
+        liftTalon.Set(ControlMode::PercentOutput, liftMod * pow);
     }
 
-    void elevatorOutball(double moderator) {
-        intakeTalon.Set(ControlMode::PercentOutput, - liftMod * moderator);
-    }*/
+    void intakeElevator(double pow) {
+        intakeTalon.Set(ControlMode::PercentOutput, tiltMod * pow);
+    }
 };
 
 START_ROBOT_CLASS(Robot)
