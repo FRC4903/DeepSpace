@@ -111,11 +111,11 @@ public:
     const int INDUCTIVE_ELEVATOR_BOTTOM = 0;
 
     const int TILT_MIN = 0;
-    const int TILT_MAX = 2000; // CHANGE OR ELSE BAD STUFF HAPPENS
+    const int TILT_MAX = 425000; // CHANGE OR ELSE BAD STUFF HAPPENS
 
     const int HOOK_SERVO = 7;
-    const int HOOK_IN_ANGLE = 100;
-    const int HOOK_OUT_ANGLE = 0;
+    const int HOOK_IN_ANGLE = 0;
+    const int HOOK_OUT_ANGLE = 110;
 
     // Servo
     Servo hookServo;
@@ -351,8 +351,8 @@ public:
         cout << "Elevator Encoder" << elevatorEncoder.Get() << endl;
         cout << "Tilt Encoder" << tiltEncoder.Get() << endl;
 
-        //bool turned = buttonTurn();
-        bool turned = false;
+        bool turned = buttonTurn();
+        //bool turned = false;
         
         ahrs->UpdateDisplacement(ahrs->GetWorldLinearAccelX(), ahrs->GetWorldLinearAccelY(), ahrs->GetActualUpdateRate(), ahrs->IsMoving());
 		alt += ahrs->GetDisplacementZ();
@@ -455,7 +455,7 @@ public:
 
     void roboMechanisms() {
 
-        //doElevatorMechanism();
+        doElevatorMechanism();
         //doClimbMechanism();
     }
 
@@ -469,12 +469,12 @@ public:
 
         //intakeElevator(joystickMechanisms.GetRawAxis(2));
 
+
+        // Ball mech
         if (joystickMechanisms.GetRawButton(6)) {
             intakeTalon.Set(ControlMode::PercentOutput, -0.75);
         } else if (joystickMechanisms.GetRawButton(5)) {
             intakeTalon.Set(ControlMode::PercentOutput, 0.5);
-        }else if (joystickMechanisms.GetRawButton(8)) {
-            intakeTalon.Set(ControlMode::PercentOutput, -0.1);
         } else {
 
             intakeTalon.Set(ControlMode::PercentOutput, 0);
@@ -729,13 +729,13 @@ public:
         pow *= -1;
 
         // Down?
-        if ((pow > 0 && !inductiveSensorState(&elevatorInductiveTop)) || (pow < 0 && !inductiveSensorState(&elevatorInductiveBottom))) {
+        if ((pow > 0.05 && !inductiveSensorState(&elevatorInductiveTop)) || (pow < -0.05 && !inductiveSensorState(&elevatorInductiveBottom))) {
             elevatorTalon.Set(ControlMode::PercentOutput, liftMod * pow);
 
         } else { // stawp
         
             cout << "Elevator locked" << endl;
-            elevatorTalon.Set(ControlMode::PercentOutput, 0.10); // make the speed 0.05 and see what happens
+            elevatorTalon.Set(ControlMode::PercentOutput, 0); // make the speed 0.05 and see what happens
 
         }
 
@@ -750,7 +750,7 @@ public:
 
         cout << "TILT ENCODER" << tiltEncoder.Get() << endl;
 
-        if (true) {//(pow < 0 && tiltEncoder.Get() >= TILT_MIN) || (pow > 0 && tiltEncoder.Get() <= TILT_MAX)) {
+        if ((pow < 0 && tiltEncoder.Get() >= TILT_MIN) || (pow > 0 && tiltEncoder.Get() <= TILT_MAX)) {
             tiltTalon.Set(ControlMode::PercentOutput, tiltMod * pow);
 
         } else { // stawp
