@@ -735,7 +735,7 @@ public:
         } else { // stawp
         
             cout << "Elevator locked" << endl;
-            elevatorTalon.Set(ControlMode::PercentOutput, 0);
+            elevatorTalon.Set(ControlMode::PercentOutput, 0.10); // make the speed 0.05 and see what happens
 
         }
 
