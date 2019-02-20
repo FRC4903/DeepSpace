@@ -102,7 +102,7 @@ public:
     const int TILT_ELEVATOR_REDLINE = 8;
     const int INTAKE_ELEVATOR_BAG = 9;
 
-    const double climbMod = 1.0;
+    const double climbMod = 0.5;
     const double backAngle = 10.0;
 
     const int ELEVATOR_ENCODER_LIMIT = 2000;
@@ -351,11 +351,11 @@ public:
         cout << "Elevator Encoder" << elevatorEncoder.Get() << endl;
         cout << "Tilt Encoder" << tiltEncoder.Get() << endl;
 
-        bool turned = buttonTurn();
-        //bool turned = false;
+        // bool turned = buttonTurn();
+        bool turned = false;
         
         ahrs->UpdateDisplacement(ahrs->GetWorldLinearAccelX(), ahrs->GetWorldLinearAccelY(), ahrs->GetActualUpdateRate(), ahrs->IsMoving());
-		alt += ahrs->GetDisplacementZ();
+        alt += ahrs->GetDisplacementZ();
         cout << alt << endl;
 
         if (joystickMain.GetRawButton(6)) // if green a button is pressed
@@ -365,9 +365,9 @@ public:
         else // base case let it be half speed
             moderator = 0.8; // limits the range given from the controller // 0.85 for carpet
 
-		if (!turned) {
-            roboMove();	
-		}
+        if (!turned) {
+            roboMove(); 
+        }
 
         roboMechanisms();
     }
@@ -456,7 +456,7 @@ public:
     void roboMechanisms() {
 
         doElevatorMechanism();
-        //doClimbMechanism();
+        doClimbMechanism();
     }
 
     void doElevatorMechanism() {
@@ -467,13 +467,13 @@ public:
         
         //motorControllerVector[1].setjoystickMechanisms.GetRawAxis(1));
 
-        //intakeElevator(joystickMechanisms.GetRawAxis(2));
+        // intakeElevator(joystickMechanisms.GetRawAxis(2));
 
 
         // Ball mech
-        if (joystickMechanisms.GetRawButton(6)) {
-            intakeTalon.Set(ControlMode::PercentOutput, -0.75);
-        } else if (joystickMechanisms.GetRawButton(5)) {
+        if (joystickMain.GetRawButton(6)) {
+            intakeTalon.Set(ControlMode::PercentOutput, -0.5);
+        } else if (joystickMain.GetRawButton(5)) {
             intakeTalon.Set(ControlMode::PercentOutput, 0.5);
         } else {
 
@@ -494,29 +494,32 @@ public:
     }
 
     void doClimbMechanism() {
-        /*if (joystickMechanisms.GetRawButton(6)) {
+        if (joystickMechanisms.GetRawButton(6)) {
             climbFrontUp();
         } else if (joystickMechanisms.GetRawButton(8)) {
             climbFrontDown();
+        }else{
+            stopFrontClimb();
         }
 
         if (joystickMechanisms.GetRawButton(5)) {
             climbRearUp();
         } else if (joystickMechanisms.GetRawButton(7)) {
             climbRearDown();
-        }  
-
-        if (joystickMechanisms.GetRawButton(10)) {
-            climbBothDown();
+        }else{
+            stopBackClimb();
         }
 
-        if (joystickMechanisms.GetPOV() == 315 || joystickMechanisms.GetPOV() == 0 || joystickMechanisms.GetPOV() == 45) {
-            climbDriveForward();
-        } else if (joystickMechanisms.GetPOV() >= 135 || joystickMechanisms.GetPOV() <= 225) {
-            climbDriveReverse();
-        }  */
+        cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: " << joystickMechanisms.GetPOV() << endl;
 
-        //climbBothDown(joystickMechanisms.GetRawAxis(1));
+        if (joystickMechanisms.GetPOV() == 0) {
+            climbDriveReverse();
+        } else if (joystickMechanisms.GetPOV() == 180) {
+            climbDriveForward();
+        }else{
+            rearDrive.Set(ControlMode::PercentOutput, 0);
+        }
+        
     }
 
     double getRealAngle(double degAng) {
@@ -670,7 +673,7 @@ public:
     void DisabledPeriodic() {}
 
     void climbToggleDisable() {
-	    climbEnabled = !climbEnabled;
+        climbEnabled = !climbEnabled;
     }
 
     void climbFront(float power) {
@@ -692,10 +695,11 @@ public:
     void climbRearUp() {
         rearClimb.Set(ControlMode::PercentOutput, - climbMod);
     }
-
-    void climbBothDown() {
-        frontClimb.Set(ControlMode::PercentOutput, cos(backAngle) * climbMod);
-        rearClimb.Set(ControlMode::PercentOutput, climbMod);
+    void stopFrontClimb(){
+        frontClimb.Set(ControlMode::PercentOutput, 0);
+    }
+    void stopBackClimb(){
+        rearClimb.Set(ControlMode::PercentOutput, 0);
     }
 
     void climbBothDown(double pow) {
@@ -750,6 +754,7 @@ public:
 
         cout << "TILT ENCODER" << tiltEncoder.Get() << endl;
 
+        // if ((pow < 0 && tiltEncoder.Get() >= TILT_MIN) || (pow > 0 && tiltEncoder.Get() <= TILT_MAX)) {
         if ((pow < 0 && tiltEncoder.Get() >= TILT_MIN) || (pow > 0 && tiltEncoder.Get() <= TILT_MAX)) {
             tiltTalon.Set(ControlMode::PercentOutput, tiltMod * pow);
 
