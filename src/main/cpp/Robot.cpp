@@ -102,6 +102,8 @@ public:
     const int TILT_ELEVATOR_REDLINE = 8;
     const int INTAKE_ELEVATOR_BAG = 9;
 
+    const int LIFT_ROBOT_TALON = 1;
+
     const double climbMod = 1.0;
     const double backAngle = 10.0;
 
@@ -132,7 +134,7 @@ public:
     // TALONS
     TalonSRX FR, FL, RR, RL;
     TalonSRX frontClimb, rearClimb, rearDrive;
-    TalonSRX elevatorTalon, intakeTalon, tiltTalon;
+    TalonSRX elevatorTalon, intakeTalon, tiltTalon, liftTalon;
 
     // GYRO
     AHRS *ahrs;
@@ -206,6 +208,8 @@ public:
 
         elevatorInductiveTop(INDUCTIVE_ELEVATOR_TOP),
         elevatorInductiveBottom(INDUCTIVE_ELEVATOR_BOTTOM),
+
+        liftTalon(LIFT_ROBOT_TALON),
 
         red(0),
         green(1),
@@ -311,6 +315,8 @@ public:
         elevatorTalon.SetNeutralMode(NeutralMode::Brake);
         intakeTalon.SetNeutralMode(NeutralMode::Brake);
         
+        liftTalon.SetNeutralMode(NeutralMode::Brake);
+
         elevatorEncoder.Reset();
         tiltEncoder.Reset();
         
@@ -343,6 +349,16 @@ public:
     }
 
     // DRIVE SYSTEM
+
+    void liftRobot(){
+        if (joystickMain.GetRawButton(1)){
+            leftTalon.Set(ControlMode::PercentOutput, 0.25);
+        }else if(joystickMain.GetRawButton(3)){
+            leftTalon.Set(ControlMode::PercentOutput, -0.25);
+        }else{
+            leftTalon.Set(ControlMode::PercentOutput, 0);
+        }
+    }
 
     void driveSystem()
     {
