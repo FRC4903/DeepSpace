@@ -102,8 +102,6 @@ public:
     const int TILT_ELEVATOR_REDLINE = 8;
     const int INTAKE_ELEVATOR_BAG = 9;
 
-    const int LIFT_ROBOT_TALON = 1;
-
     const double climbMod = 1.0;
     const double backAngle = 10.0;
 
@@ -135,7 +133,6 @@ public:
     TalonSRX FR, FL, RR, RL;
     TalonSRX frontClimb, rearClimb, rearDrive;
     TalonSRX elevatorTalon, intakeTalon, tiltTalon;
-    TalonSRX liftTalon;
 
     // GYRO
     AHRS *ahrs;
@@ -209,8 +206,6 @@ public:
 
         elevatorInductiveTop(INDUCTIVE_ELEVATOR_TOP),
         elevatorInductiveBottom(INDUCTIVE_ELEVATOR_BOTTOM),
-
-        liftTalon(LIFT_ROBOT_TALON),
 
         red(0),
         green(1),
@@ -316,8 +311,6 @@ public:
         elevatorTalon.SetNeutralMode(NeutralMode::Brake);
         intakeTalon.SetNeutralMode(NeutralMode::Brake);
         
-        liftTalon.SetNeutralMode(NeutralMode::Brake);
-
         elevatorEncoder.Reset();
         tiltEncoder.Reset();
         
@@ -337,7 +330,6 @@ public:
         driveSystem();      //uncomment to drive
         //checkEncoders();
         doElevatorMechanism();
-        liftRobot();
         
     }
 
@@ -352,19 +344,6 @@ public:
 
     // DRIVE SYSTEM
 
-    void liftRobot(){
-        if (joystickMain.GetRawButton(1)){
-            liftTalon.Set(ControlMode::PercentOutput, 0.25);
-            cout << "go up" << endl;
-        }else if(joystickMain.GetRawButton(3)){
-            liftTalon.Set(ControlMode::PercentOutput, -0.25);
-            cout << "go down" << endl;
-        }else{
-            liftTalon.Set(ControlMode::PercentOutput, 0);
-            cout << "stopped" << endl;
-        }
-    }
-
     void driveSystem()
     {
 
@@ -372,11 +351,11 @@ public:
         cout << "Elevator Encoder" << elevatorEncoder.Get() << endl;
         cout << "Tilt Encoder" << tiltEncoder.Get() << endl;
 
-        bool turned = buttonTurn();
-        //bool turned = false;
+        // bool turned = buttonTurn();
+        bool turned = false;
         
         ahrs->UpdateDisplacement(ahrs->GetWorldLinearAccelX(), ahrs->GetWorldLinearAccelY(), ahrs->GetActualUpdateRate(), ahrs->IsMoving());
-		alt += ahrs->GetDisplacementZ();
+        alt += ahrs->GetDisplacementZ();
         cout << alt << endl;
 
         if (joystickMain.GetRawButton(6)) // if green a button is pressed
@@ -386,9 +365,9 @@ public:
         else // base case let it be half speed
             moderator = 0.8; // limits the range given from the controller // 0.85 for carpet
 
-		if (!turned) {
-            roboMove();	
-		}
+        if (!turned) {
+            roboMove(); 
+        }
 
         roboMechanisms();
     }
@@ -477,7 +456,7 @@ public:
     void roboMechanisms() {
 
         doElevatorMechanism();
-        //doClimbMechanism();
+        doClimbMechanism();
     }
 
     void doElevatorMechanism() {
@@ -515,7 +494,7 @@ public:
     }
 
     void doClimbMechanism() {
-        /*if (joystickMechanisms.GetRawButton(6)) {
+        if (joystickMechanisms.GetRawButton(6)) {
             climbFrontUp();
         } else if (joystickMechanisms.GetRawButton(8)) {
             climbFrontDown();
@@ -535,9 +514,9 @@ public:
             climbDriveForward();
         } else if (joystickMechanisms.GetPOV() >= 135 || joystickMechanisms.GetPOV() <= 225) {
             climbDriveReverse();
-        }  */
+        }  
 
-        //climbBothDown(joystickMechanisms.GetRawAxis(1));
+        climbBothDown(joystickMechanisms.GetRawAxis(1));
     }
 
     double getRealAngle(double degAng) {
@@ -691,7 +670,7 @@ public:
     void DisabledPeriodic() {}
 
     void climbToggleDisable() {
-	    climbEnabled = !climbEnabled;
+        climbEnabled = !climbEnabled;
     }
 
     void climbFront(float power) {
@@ -734,11 +713,15 @@ public:
     }
 
     void hookIn() {
+
         hookServo.SetAngle(HOOK_IN_ANGLE);
+
     }
 
     void hookOut() {
+
         hookServo.SetAngle(HOOK_OUT_ANGLE);
+
     }
 
     void moveElevator(double pow) {
