@@ -227,7 +227,7 @@ public:
     void setLED(bool r, bool g, bool b) {
         red.Set(!r);
         green.Set(!g);
-        blue.Set(!g);
+        blue.Set(!b);
     }
 
     void setup()
@@ -283,21 +283,6 @@ public:
         // rightEncoderInitial = RL.GetSelectedSensorPosition(kPIDLoopIdx);
     }
 
-/*  double getLeftEncoderValue() {
-        return (talonRight1.GetSelectedSensorPosition(kPIDLoopIdx) - leftEncoderInitial) / leftEncoderConstant;
-    }
-
-    double getRightEncoderValue() {
-        return (talonLeft2.GetSelectedSensorPosition(kPIDLoopIdx) - rightEncoderInitial) / rightEncoderConstant;
-    }*/
-
-
-/*  double convertAngle(double val)
-    {
-        return (double)(val - initialValTalon)/2000*360;
-    }*/
-
-
     void TeleopInit() {
         //driveSystemBrakeMode(true);  //DRIVING
 
@@ -327,32 +312,26 @@ public:
     }
 
     void TeleopPeriodic() {
-        driveSystem();      //uncomment to drive
-        //checkEncoders();
-        doElevatorMechanism();
+        driveSystem();
+
+        moveElevator(joystickMechanisms.GetRawAxis(1));
+        moveTilt(joystickMechanisms.GetRawAxis(3));
+
+        doClimbMechanism();
+        doHatchMechanism();
         
     }
 
-    void checkEncoders() {
-
-        /*        
-        for (MotorController controller : motorControllerVector) {
-            controller.update();
-        }*/
-
-    }
 
     // DRIVE SYSTEM
 
     void driveSystem()
     {
 
-
         cout << "Elevator Encoder" << elevatorEncoder.Get() << endl;
         cout << "Tilt Encoder" << tiltEncoder.Get() << endl;
 
-        // bool turned = buttonTurn();
-        bool turned = false;
+        bool turned = buttonTurn();
         
         ahrs->UpdateDisplacement(ahrs->GetWorldLinearAccelX(), ahrs->GetWorldLinearAccelY(), ahrs->GetActualUpdateRate(), ahrs->IsMoving());
         alt += ahrs->GetDisplacementZ();
@@ -368,8 +347,6 @@ public:
         if (!turned) {
             roboMove(); 
         }
-
-        roboMechanisms();
     }
 
     void roboMove() {
@@ -386,13 +363,6 @@ public:
         bool manTurning = false;
         bool manMoving = false;
 
-        double safeDist = 8 * (FRpow + FLpow + RLpow + RRpow + 1);
-        //cout << "SAFE" << safeDist << endl;
-
-        
-        
-        //if (!(j_y_L < 0 && ultraFront->GetRangeInches() < safeDist)) {
-        //cout << j_x_L << " " << j_y_L << endl;
         if (j_x_L != 0 || j_y_L != 0){
             manMoving = true;
 
@@ -453,23 +423,7 @@ public:
         RL.Set(ControlMode::PercentOutput, RLpow * moderator);
     }
 
-    void roboMechanisms() {
-
-        doElevatorMechanism();
-        doClimbMechanism();
-    }
-
-    void doElevatorMechanism() {
-        moveElevator(joystickMechanisms.GetRawAxis(1));
-        moveTilt(joystickMechanisms.GetRawAxis(3));
-        
-        //climbFront(joystickMechanisms.GetRawAxis(3));
-        
-        //motorControllerVector[1].setjoystickMechanisms.GetRawAxis(1));
-
-        //intakeElevator(joystickMechanisms.GetRawAxis(2));
-
-
+    void doIntakeMechanism() {
         // Ball mech
         if (joystickMechanisms.GetRawButton(6)) {
             intakeTalon.Set(ControlMode::PercentOutput, -0.75);
@@ -479,18 +433,14 @@ public:
 
             intakeTalon.Set(ControlMode::PercentOutput, 0);
         }
+    }
 
+    void doHatchMechanism() {
         if (joystickMechanisms.GetRawButton(4)) {
-
             hookOut();
-
-            //tiltOut();
         } else if (joystickMechanisms.GetRawButton(2)) {
-
             hookIn();
-
-            //tiltIn();
-        }  
+        }
     }
 
     void doClimbMechanism() {
