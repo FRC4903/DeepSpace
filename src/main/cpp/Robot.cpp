@@ -237,28 +237,9 @@ public:
         timer->Start();
     }
 
-    void setupEncoderTalon(TalonSRX* talon) {
-        int absPos = talon->GetSelectedSensorPosition(0) & 0xFFF;
-        talon->SetSelectedSensorPosition(absPos, kPIDLoopIdx, kTimeoutMs);
-
-        talon->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Relative, kPIDLoopIdx, kTimeoutMs);
-        talon->SetSensorPhase(true);
-        talon->ConfigNominalOutputForward(0, kTimeoutMs);
-        talon->ConfigNominalOutputReverse(0, kTimeoutMs);
-        talon->ConfigPeakOutputForward(1, kTimeoutMs);
-        talon->ConfigPeakOutputReverse(-1, kTimeoutMs);
-        talon->Config_kF(kPIDLoopIdx, 0.0, kTimeoutMs);
-        talon->Config_kP(kPIDLoopIdx, 0.1, kTimeoutMs);
-        talon->Config_kI(kPIDLoopIdx, 0.0, kTimeoutMs);
-        talon->Config_kD(kPIDLoopIdx, 0.0, kTimeoutMs);
-    }
-
     void RobotInit() {
         ultraFront = new Ultrasonic(3, 4);
         ultraFront->SetAutomaticMode(true);
-
-        //setupEncoderTalon(RL);
-        //setupEncoderTalon(FR);
 
         CameraServer::GetInstance()->StartAutomaticCapture();
 
@@ -278,14 +259,7 @@ public:
 
     }
 
-    void resetEncoder() {
-        // leftEncoderInitial = RL.GetSelectedSensorPosition(kPIDLoopIdx);
-        // rightEncoderInitial = RL.GetSelectedSensorPosition(kPIDLoopIdx);
-    }
-
     void TeleopInit() {
-        //driveSystemBrakeMode(true);  //DRIVING
-
         FR.SetNeutralMode(NeutralMode::Brake);
         FL.SetNeutralMode(NeutralMode::Brake);
         RR.SetNeutralMode(NeutralMode::Brake);
@@ -319,7 +293,6 @@ public:
 
         doClimbMechanism();
         doHatchMechanism();
-        
     }
 
 
@@ -375,7 +348,6 @@ public:
             FLpow += ( - getWheelPower(calcAng - gAng, false) * mag * moderator );
             RRpow += getWheelPower(calcAng - gAng, false) * mag * moderator;
             RLpow += getWheelPower(calcAng - gAng, true) * mag * moderator;
-
         } 
 
         if (j_x_R != 0) {
@@ -391,15 +363,6 @@ public:
             FLpow += j_x_R * turnMod;
             RRpow += j_x_R * turnMod;
             RLpow += j_x_R * turnMod;
-            // FR.Set(ControlMode::PercentOutput, j_x_R * moderator);
-            // FL.Set(ControlMode::PercentOutput, j_x_R * moderator);
-            // RR.Set(ControlMode::PercentOutput, j_x_R * moderator);
-            // RL.Set(ControlMode::PercentOutput, j_x_R * moderator);
-            /*
-            setFrontRight(- j_x_R * moderator);
-            setFrontLeft(j_x_R * moderator);
-            setRearRight(- j_x_R * moderator);
-            setRearLeft(j_x_R * moderator);*/
 
             } 
             if (manMoving && manTurning) {
@@ -408,15 +371,7 @@ public:
                 RRpow /= 2;
                 RLpow /= 2;
             }
-        // } else {
-        //     //cout << "STOPPED" << endl;
 
-        //     FRpow = 0;
-        //     FLpow = 0;
-        //     RRpow = 0;
-        //     RLpow = 0;
-        // }
-        
         FR.Set(ControlMode::PercentOutput, FRpow * moderator);
         FL.Set(ControlMode::PercentOutput, FLpow * moderator);
         RR.Set(ControlMode::PercentOutput, RRpow * moderator);
@@ -651,7 +606,6 @@ public:
     void climbBothDown(double pow) {
         frontClimb.Set(ControlMode::PercentOutput,  1.4*climbMod * pow);
         rearClimb.Set(ControlMode::PercentOutput, climbMod * pow);
-        //cout << ahrs->GetRoll() << endl;
     }
 
     void climbDriveForward() {
@@ -663,15 +617,11 @@ public:
     }
 
     void hookIn() {
-
         hookServo.SetAngle(HOOK_IN_ANGLE);
-
     }
 
     void hookOut() {
-
         hookServo.SetAngle(HOOK_OUT_ANGLE);
-
     }
 
     void moveElevator(double pow) {
@@ -693,7 +643,6 @@ public:
         cout << "Elevator Encoder" << elevatorEncoder.Get() << endl;
     }
 
-    
     void moveTilt(double pow) {
 
         pow *= -1;
@@ -711,10 +660,6 @@ public:
         }
 
         cout << "Tilt power" << tiltMod * pow << endl;
-    }
-
-    void intakeElevator(double pow) {
-        intakeTalon.Set(ControlMode::PercentOutput, tiltMod * pow);
     }
 };
 
