@@ -134,7 +134,8 @@ public:
     // TALONS
     TalonSRX FR, FL, RR, RL;
     TalonSRX frontClimb, rearClimb, rearDrive;
-    TalonSRX elevatorTalon, intakeTalon, tiltTalon, liftTalon;
+    TalonSRX elevatorTalon, intakeTalon, tiltTalon;
+    TalonSRX liftTalon;
 
     // GYRO
     AHRS *ahrs;
@@ -336,6 +337,7 @@ public:
         driveSystem();      //uncomment to drive
         //checkEncoders();
         doElevatorMechanism();
+        liftRobot();
         
     }
 
@@ -352,11 +354,14 @@ public:
 
     void liftRobot(){
         if (joystickMain.GetRawButton(1)){
-            leftTalon.Set(ControlMode::PercentOutput, 0.25);
+            liftTalon.Set(ControlMode::PercentOutput, 0.25);
+            cout << "go up" << endl;
         }else if(joystickMain.GetRawButton(3)){
-            leftTalon.Set(ControlMode::PercentOutput, -0.25);
+            liftTalon.Set(ControlMode::PercentOutput, -0.25);
+            cout << "go down" << endl;
         }else{
-            leftTalon.Set(ControlMode::PercentOutput, 0);
+            liftTalon.Set(ControlMode::PercentOutput, 0);
+            cout << "stopped" << endl;
         }
     }
 
@@ -729,15 +734,11 @@ public:
     }
 
     void hookIn() {
-
         hookServo.SetAngle(HOOK_IN_ANGLE);
-
     }
 
     void hookOut() {
-
         hookServo.SetAngle(HOOK_OUT_ANGLE);
-
     }
 
     void moveElevator(double pow) {
