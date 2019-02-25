@@ -215,8 +215,9 @@ public:
 
     void TeleopPeriodic() {
         driveSystem();      
-        mechanismSystem();
+        //mechanismSystem();
         updateTurn();
+        cout << ahrs->GetRate() << " " << ahrs->GetYaw() << endl;
     }
 
     // DRIVE SYSTEM
@@ -300,9 +301,9 @@ public:
     }
 
     void doIntakeMechanism(){
-        if (joystickMain.GetRawButton(6)) {
+        if (joystickMechanism.GetRawButton(1)) {
             intakeTalon.Set(ControlMode::PercentOutput, -0.5);
-        } else if (joystickMain.GetRawButton(5)) {
+        } else if (joystickMechanism.GetRawButton(3)) {
             intakeTalon.Set(ControlMode::PercentOutput, 0.5);
         } else {
             intakeTalon.Set(ControlMode::PercentOutput, 0);
@@ -315,29 +316,31 @@ public:
     }
 
     void doClimbMechanism() {
-        if (joystickMechanisms.GetRawButton(6)) {
-            climbFrontUp();
-        } else if (joystickMechanisms.GetRawButton(8)) {
-            climbFrontDown();
-        } else{
-            stopFrontClimb();
-        }
+        //ASSIGN PROPER CONTROLLER AND CONTROLS BEFORE TESTING
 
-        if (joystickMechanisms.GetRawButton(5)) {
-            climbRearUp();
-        } else if (joystickMechanisms.GetRawButton(7)) {
-            climbRearDown();
-        }else{
-            stopBackClimb();
-        }
+        // if (joystickMechanisms.GetRawButton(6)) {
+        //     climbFrontUp();
+        // } else if (joystickMechanisms.GetRawButton(8)) {
+        //     climbFrontDown();
+        // } else{
+        //     stopFrontClimb();
+        //}
 
-        if (joystickMechanisms.GetPOV() == 0) {
-            climbDriveReverse();
-        } else if (joystickMechanisms.GetPOV() == 180) {
-            climbDriveForward();
-        } else {
-            rearDrive.Set(ControlMode::PercentOutput, 0);
-        }
+        // if (joystickMechanisms.GetRawButton(5)) {
+        //     climbRearUp();
+        // } else if (joystickMechanisms.GetRawButton(7)) {
+        //     climbRearDown();
+        // }else{
+        //     stopBackClimb();
+        // }
+
+        // if (joystickMechanisms.GetPOV() == 0) {
+        //     climbDriveForward();
+        // } else if (joystickMechanisms.GetPOV() == 180) {
+        //     climbDriveReverse();
+        // } else {
+        //     rearDrive.Set(ControlMode::PercentOutput, 0);
+        // }
     }
 
     double getRealAngle(double degAng) {
@@ -439,11 +442,8 @@ public:
         //         turned = true;
         //     }
         //} else {
-            if (joystickMain.GetRawButton(1)) {
-                //turn(45);
-                beginTurn(45);
-               
-            } else if (joystickMain.GetRawButton(2)) {
+                   
+            if (joystickMain.GetRawButton(2)) {
                 //turn(95);
                 beginTurn(90);
                 
@@ -531,11 +531,11 @@ public:
     }
 
     void climbDriveForward() {
-        rearDrive.Set(ControlMode::PercentOutput, 0.5);
+        rearDrive.Set(ControlMode::PercentOutput, -0.5);
     }
 
     void climbDriveReverse() {
-         rearDrive.Set(ControlMode::PercentOutput, - 0.5);
+         rearDrive.Set(ControlMode::PercentOutput, 0.5);
     }
 
     void hookIn() {
