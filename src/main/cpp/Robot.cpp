@@ -50,6 +50,12 @@ public:
     const double climbMod = 0.5;
     const double liftMod = 0.5;
     const double tiltMod = 0.5;
+    const double autoTurnMod = 0.6;
+
+    //TURN VARIABLES
+    const double turnCheckSeconds = 2; 
+    double targetAngle ; 
+    bool turning; 
 
     //DRIVE SPEED MODERATOR
     double driveSpeedMod;
@@ -153,9 +159,7 @@ public:
     }
 
     void RobotInit() {
-        ultraFront = new Ultrasonic(3, 4);
-        ultraFront->SetAutomaticMode(true);
-        
+                
         CameraServer::GetInstance()->StartAutomaticCapture();
 
         timer->Start();
@@ -168,9 +172,11 @@ public:
 
     void AutonomousInit() {
     //COOL PROGRAMMING STUFF USED TO BE HERE
+        TeleopInit();
     }
 
     void AutonomousPeriodic() {
+        TeleopPeriodic();
     }
 
     void TeleopInit() {
@@ -210,27 +216,23 @@ public:
     void TeleopPeriodic() {
         driveSystem();      
         mechanismSystem();
+        updateTurn();
     }
 
     // DRIVE SYSTEM
     void driveSystem()
     {
-        // bool turned = buttonTurn();
-        bool turned = false;
+        buttonTurn();
+        
         //ahrs->UpdateDisplacement(ahrs->GetWorldLinearAccelX(), ahrs->GetWorldLinearAccelY(), ahrs->GetActualUpdateRate(), ahrs->IsMoving());
         if (joystickMain.GetRawButton(6)) // if green a button is pressed
-            driveSpeedMod = 1.0; // makes robot go faster .. 1.0 for carpet
+            driveSpeedMod = 0.8; // makes robot go faster .. 1.0 for carpet
         else if (joystickMain.GetRawButton(5)) // if red b button is pressed
             driveSpeedMod = 0.4; // make it really slow
         else // base case let it be half speed
-            driveSpeedMod = 0.8; // limits the range given from the controller // 0.85 for carpet
+            driveSpeedMod = 0.6; // limits the range given from the controller // 0.85 for carpet
 
-        if (!turned) {
-            roboMove(); 
-        }
-    }
-
-    void roboMove() {
+                    
         j_x_L = joystickMain.GetRawAxis(0);
         j_y_L = joystickMain.GetRawAxis(1);
 
@@ -371,16 +373,16 @@ public:
 
     void turn(double moveAngle)
     {
-        double autoTurnMod = 0.75;
+        double autoTurnMod = 0.5;
         resetGyro();
         while (true)
         {
             if (ahrs->GetYaw() < moveAngle) {
-                setRight(-driveSpeedMod *autoTurnMod);
-                setLeft(driveSpeedMod *autoTurnMod);
+                setRight(-autoTurnMod);
+                setLeft(autoTurnMod);
             } else {
-                setRight(driveSpeedMod*autoTurnMod);
-                setLeft(-driveSpeedMod *autoTurnMod);
+                setRight(autoTurnMod);
+                setLeft(-autoTurnMod);
             }
             if (abs(ahrs->GetYaw() - moveAngle) < 36) {
                 break;
@@ -388,44 +390,74 @@ public:
         }
     }
 
-    void turnTo(double moveAngle) 
-    {
-        turn(moveAngle - ahrs->GetYaw() - gyroAngDif);
-    }
+    void beginTurn(double moveAngle){
+        targetAngle = moveAngle;
+        turning = true;
+        timer->Reset();
+        resetGyro();
+        
+        }
+          
 
-    bool buttonTurn()
-    {   
-        bool turned = false;
-        if (135 <= joystickMain.GetPOV() && joystickMain.GetPOV() <= 225) {
-            if (joystickMain.GetRawButton(1)) {
-                turnTo(180);
-                turned = true;
-            } else if (joystickMain.GetRawButton(2)) {
-                turnTo(90);
-                turned = true;
-            } else if (joystickMain.GetRawButton(3)) {
-                turnTo(-90);
-                turned = true;
-            } else if (joystickMain.GetRawButton(4)) {
-                turnTo(0);
-                turned = true;
+    void updateTurn(){
+
+        if (turning){
+
+            if (ahrs->GetYaw() < targetAngle) {
+                setRight(-autoTurnMod);
+                setLeft(autoTurnMod);
+            } else {
+                setRight(autoTurnMod);
+                setLeft(-autoTurnMod);
             }
-        } else {
-            if (joystickMain.GetRawButton(1)) {
-                turn(45);
-                turned = true;
-            } else if (joystickMain.GetRawButton(2)) {
-                turn(95);
-                turned = true;
-            } else if (joystickMain.GetRawButton(3)) {
-                turn(-95);
-                turned = true;
-            } else if (joystickMain.GetRawButton(4)) {
-                turn(180);
-                turned = true;
+            if (abs(ahrs->GetYaw() - targetAngle) < 20 || timer->Get() > turnCheckSeconds) {
+                turning = false;
             }
         }
-        return turned;
+    }   
+
+    // void turnTo(double moveAngle) 
+    // {
+    //     turn(moveAngle - ahrs->GetYaw() - gyroAngDif);
+    // }
+
+    void buttonTurn()
+    {   
+       
+        // if (135 <= joystickMain.GetPOV() && joystickMain.GetPOV() <= 225) {
+        //     if (joystickMain.GetRawButton(1)) {
+        //         turnTo(180);
+        //         turned = true;
+        //     } else if (joystickMain.GetRawButton(2)) {
+        //         turnTo(90);
+        //         turned = true;
+        //     } else if (joystickMain.GetRawButton(3)) {
+        //         turnTo(-90);
+        //         turned = true;
+        //     } else if (joystickMain.GetRawButton(4)) {
+        //         turnTo(0);
+        //         turned = true;
+        //     }
+        //} else {
+            if (joystickMain.GetRawButton(1)) {
+                //turn(45);
+                beginTurn(45);
+               
+            } else if (joystickMain.GetRawButton(2)) {
+                //turn(95);
+                beginTurn(90);
+                
+            } else if (joystickMain.GetRawButton(3)) {
+                //turn(-95);
+                beginTurn(-90);
+               
+            } else if (joystickMain.GetRawButton(4)) {
+                //turn(180);
+                beginTurn(180);
+                
+            }
+        //}
+        
     }
 
     void setRight(double val) {
