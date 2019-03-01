@@ -52,6 +52,7 @@ public:
     const double tiltMod = 0.5;
     const double elevatorMod = 0.5;
     const double autoTurnMod = 0.6;
+<<<<<<< HEAD
 
     //TURN VARIABLES
     const double turnCheckSeconds = 2; 
@@ -66,6 +67,22 @@ public:
     //DRIVE SPEED MODERATOR
     double driveSpeedMod;
 
+=======
+
+    //TURN VARIABLES
+    const double turnCheckSeconds = 2; 
+    double targetAngle ; 
+    bool turning; 
+
+    // ELEVATOR GOTO
+    double elevatorTargetTick;
+    bool elevatorAuto;
+    const double elevatorCheckSeconds = 3;
+
+    //DRIVE SPEED MODERATOR
+    double driveSpeedMod;
+
+>>>>>>> 4427c77532c9d55a03f1c6d9e959dcc8e45cd757
     //INDUCTIVE SENSORS    
     const int INDUCTIVE_ELEVATOR_TOP = 1;
     const int INDUCTIVE_ELEVATOR_BOTTOM = 0;
@@ -83,6 +100,12 @@ public:
     const int MIDDLE_ELEVATOR_TICKS = 1088;
     const int TOP_ELEVATOR_TICKS = 2195;
 
+<<<<<<< HEAD
+=======
+    // ESTOP
+    const double ESTOP_BOUNDARY = 0.1;
+
+>>>>>>> 4427c77532c9d55a03f1c6d9e959dcc8e45cd757
     // CREATE HOOK SERVO OBJECT
     Servo hookServo;
 
@@ -231,6 +254,7 @@ public:
 
     void TeleopPeriodic() {
 
+<<<<<<< HEAD
         // DIsable driving if climbing
         if (!climbEnabled()) {
             driveSystem();      
@@ -246,6 +270,38 @@ public:
         return joystickMain.GetRawAxis(2) > 0.95 && joystickMain.GetRawAxis(3) > 0.95;
     }
 
+=======
+        // ESTOP FOR TURN
+        if (eStopTriggered(joystickMain.GetRawAxis(0), joystickMain.GetRawAxis(1), joystickMain.GetRawAxis(4), joystickMain.GetRawAxis(5)) && turning) {
+            turning = false;
+
+            cout << "TURNING ESTOP" << endl;
+        }
+
+        // ESTOP FOR ELEVATOR
+        if (eStopTriggered(joystickMechanisms.GetRawAxis(0), joystickMechanisms.GetRawAxis(1), 0, 0) && elevatorAuto) {
+            elevatorAuto = false;
+
+            cout << "ELEVATOR ESTOP" << endl;
+        }
+
+
+        // DIsable driving if climbing
+        if (!climbEnabled()) {
+            driveSystem();      
+        }
+
+        mechanismSystem();
+        updateTurn();
+        updateElevator();
+        //cout << ahrs->GetRate() << " " << ahrs->GetYaw() << endl;
+    }
+
+    bool climbEnabled() {
+        return joystickMain.GetRawAxis(2) > 0.95 && joystickMain.GetRawAxis(3) > 0.95;
+    }
+
+>>>>>>> 4427c77532c9d55a03f1c6d9e959dcc8e45cd757
     // DRIVE SYSTEM
     void driveSystem()
     {
@@ -343,6 +399,10 @@ public:
     void doElevatorMechanism() {
         moveElevator(joystickMechanisms.GetRawAxis(1));
         moveTilt(joystickMechanisms.GetRawAxis(3));
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4427c77532c9d55a03f1c6d9e959dcc8e45cd757
         
         if (joystickMechanisms.GetRawButton(5) && joystickMechanisms.GetRawButton(6)) { // LEVEL 3
 
@@ -356,10 +416,17 @@ public:
 
     void doClimbMechanism() {
         //ASSIGN PROPER CONTROLLER AND CONTROLS BEFORE TESTING
+<<<<<<< HEAD
 
         double leftValue = joystickMain.GetRawAxis(0);
         double rightValue = joystickMain.GetRawAxis(5);
 
+=======
+
+        double leftValue = joystickMain.GetRawAxis(0);
+        double rightValue = joystickMain.GetRawAxis(5);
+
+>>>>>>> 4427c77532c9d55a03f1c6d9e959dcc8e45cd757
         // So that the motor doesn't activate randomly
         if((leftValue < 0 && leftValue >= -0.05) || (leftValue > 0 && leftValue <= 0.05)) { leftValue = 0; }
         if((rightValue < 0 && rightValue >= -0.05) || (rightValue > 0 && rightValue <= 0.05)) { rightValue = 0; }
@@ -395,6 +462,16 @@ public:
     double getRealAngle(double degAng) {
         if (degAng < 0) {degAng += getPi() * 2; }
         return degAng;
+    }
+
+    bool outOfBoundary(double limit, double value) {
+        return abs(value) >= limit;
+    }
+
+    bool eStopTriggered(double a, double b, double c, double d) {
+
+        return outOfBoundary(ESTOP_BOUNDARY, a) || outOfBoundary(ESTOP_BOUNDARY, b) || outOfBoundary(ESTOP_BOUNDARY, c) || outOfBoundary(ESTOP_BOUNDARY, d);
+
     }
 
     double getPi() {
@@ -449,6 +526,11 @@ public:
 
         elevatorTimer->Reset();
 
+<<<<<<< HEAD
+=======
+        cout << "Starting auto elevator to level: " << ticks << endl;
+
+>>>>>>> 4427c77532c9d55a03f1c6d9e959dcc8e45cd757
         // Timer????
 
     }
@@ -479,6 +561,10 @@ public:
         turnTimer->Reset();
         resetGyro();
         
+<<<<<<< HEAD
+=======
+        cout << "Starting auto turn to angle: " << moveAngle << endl;
+>>>>>>> 4427c77532c9d55a03f1c6d9e959dcc8e45cd757
     }
           
 
