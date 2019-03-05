@@ -19,7 +19,8 @@
     "ostream": "cpp",
     "iostream": "cpp",
     "cmath": "cpp",
-    "utility": "cpp"
+    "utility": "cpp",
+    "cstdlib": "cpp"
   },
   "C_Cpp.errorSquiggles": "Enabled"
 }

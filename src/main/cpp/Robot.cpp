@@ -83,6 +83,8 @@ public:
     const int MIDDLE_ELEVATOR_TICKS = 1088;
     const int TOP_ELEVATOR_TICKS = 2195;
 
+    const int HUMAN_ELEVATOR_TOLERANCE = 20;
+
     // ESTOP
     const double ESTOP_BOUNDARY = 0.1;
 
@@ -254,10 +256,26 @@ public:
             driveSystem();      
         }
 
-        mechanismSystem();
+        //mechanismSystem();
         updateTurn();
         updateElevator();
         //cout << ahrs->GetRate() << " " << ahrs->GetYaw() << endl;
+
+        elevatorLED();
+    }
+
+    // Make LEDs green when within 10 ticks of top or middle elevator position
+    void elevatorLED() {
+        // Elevator range 
+        if (abs(elevatorEncoder.Get() - MIDDLE_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE || abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE) {
+            setLED(false, true, false);
+        } else {
+            if (DriverStation::GetInstance().GetAlliance() == DriverStation::kRed) {
+                setLED(true, false, false);
+            } else {
+                setLED(false, false, true);
+            }
+        }
     }
 
     bool climbEnabled() {
