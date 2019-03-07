@@ -124,6 +124,7 @@ public:
     double j_x_L, j_y_L, j_x_R;
 
     //bool climbEnabled = false;
+    bool climbRetractionEnabled = false;
 
     //INDUCTIVE SENSOR OBJECTS
     AnalogInput elevatorInductiveTop, elevatorInductiveBottom;
@@ -250,6 +251,11 @@ public:
             cout << "ELEVATOR ESTOP" << endl;
         }
 
+        if (joystickMain.GetRawButton(7) && joystickMain.GetRawButton(8)) {
+            climbRetractionEnabled = true;
+            
+            cout << "CLIMB RETRACT ACTIVATED!!!!!" << endl;
+        }
 
         // DIsable driving if climbing
         if (!climbEnabled()) {
@@ -269,6 +275,8 @@ public:
         // Elevator range 
         if (abs(elevatorEncoder.Get() - MIDDLE_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE || abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE) {
             setLED(false, true, false);
+        } else if(climbRetractionEnabled) {
+            setLED(true, true, false);
         } else {
             if (DriverStation::GetInstance().GetAlliance() == DriverStation::kRed) {
                 setLED(true, false, false);
@@ -394,12 +402,23 @@ public:
     void doClimbMechanism() {
         //ASSIGN PROPER CONTROLLER AND CONTROLS BEFORE TESTING
 
-        double leftValue = joystickMain.GetRawAxis(0);
+        double leftValue = joystickMain.GetRawAxis(1);
         double rightValue = joystickMain.GetRawAxis(5);
 
         // So that the motor doesn't activate randomly
         if((leftValue < 0 && leftValue >= -0.05) || (leftValue > 0 && leftValue <= 0.05)) { leftValue = 0; }
         if((rightValue < 0 && rightValue >= -0.05) || (rightValue > 0 && rightValue <= 0.05)) { rightValue = 0; }
+
+        // Prevent retraction of climb until end is reached
+        if (!climbRetractionEnabled) {
+            if (leftValue < 0) {
+                leftValue = 0;
+            }
+
+            if (rightValue < 0) {
+                rightValue = 0;
+            }
+        }
         
         rearClimb.Set(ControlMode::PercentOutput, climbMod * rightValue);
         frontClimb.Set(ControlMode::PercentOutput, climbMod * leftValue);   
