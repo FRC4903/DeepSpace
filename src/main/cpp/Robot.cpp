@@ -197,6 +197,10 @@ public:
     }
 
     void TeleopInit() {
+
+        // RESET VABLUES
+        climbRetractionEnabled = false;
+
         //DRIVING IN BRAKE MODE
         FR.SetNeutralMode(NeutralMode::Brake);
         FL.SetNeutralMode(NeutralMode::Brake);
@@ -226,13 +230,6 @@ public:
 
         turnTimer->Start();
         turnTimer->Reset();
-
-        // Set LED strip to alliance color
-        if (DriverStation::GetInstance().GetAlliance() == DriverStation::kRed) {
-            setLED(true, false, false);
-        } else {
-            setLED(false, false, true);
-        }
     }
 
     void TeleopPeriodic() {
@@ -267,11 +264,11 @@ public:
         updateElevator();
         //cout << ahrs->GetRate() << " " << ahrs->GetYaw() << endl;
 
-        elevatorLED();
+        updateLED();
     }
 
     // Make LEDs green when within 10 ticks of top or middle elevator position
-    void elevatorLED() {
+    void updateLED() {
         // Elevator range 
         if (abs(elevatorEncoder.Get() - MIDDLE_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE || abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE) {
             setLED(false, true, false);
@@ -650,7 +647,9 @@ public:
 
     void DisabledInit() {}
 
-    void DisabledPeriodic() {}
+    void DisabledPeriodic() {
+        setLED(false, false, true);
+    }
 
     void climbFront(float power) {
         frontClimb.Set(ControlMode::PercentOutput, climbMod * power);
