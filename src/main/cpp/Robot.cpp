@@ -47,8 +47,13 @@ public:
     const int INTAKE_ELEVATOR_BAG = 9;
 
     //CONSTANT MODERATORS
-    const double climbMod = 0.5;
-    const double liftMod = 0.5;
+    const double climbMod = 0.7;
+
+
+    const double frontClimbMod = 0.9;
+    const double backClimbMod = 0.7;
+
+    const double liftMod = 0.7;
     const double tiltMod = 0.5;
     const double elevatorMod = 0.5;
     const double autoTurnMod = 0.6;
@@ -123,7 +128,6 @@ public:
     //DRIVE VARIABLES
     double j_x_L, j_y_L, j_x_R;
 
-    //bool climbEnabled = false;
     bool climbRetractionEnabled = false;
 
     //INDUCTIVE SENSOR OBJECTS
@@ -259,7 +263,7 @@ public:
             driveSystem();      
         }
 
-        //mechanismSystem();
+        mechanismSystem();
         updateTurn();
         updateElevator();
         //cout << ahrs->GetRate() << " " << ahrs->GetYaw() << endl;
@@ -284,6 +288,7 @@ public:
     }
 
     bool climbEnabled() {
+
         return joystickMain.GetRawAxis(2) > 0.95 && joystickMain.GetRawAxis(3) > 0.95;
     }
 
@@ -398,8 +403,8 @@ public:
     void doClimbMechanism() {
         //ASSIGN PROPER CONTROLLER AND CONTROLS BEFORE TESTING
 
-        double leftValue = joystickMain.GetRawAxis(1);
-        double rightValue = joystickMain.GetRawAxis(5);
+        double leftValue = joystickMain.GetRawAxis(1) * -1;
+        double rightValue = joystickMain.GetRawAxis(5) * -1;
 
         // So that the motor doesn't activate randomly
         if((leftValue < 0 && leftValue >= -0.05) || (leftValue > 0 && leftValue <= 0.05)) { leftValue = 0; }
@@ -416,8 +421,8 @@ public:
             }
         }
         
-        rearClimb.Set(ControlMode::PercentOutput, climbMod * rightValue);
-        frontClimb.Set(ControlMode::PercentOutput, climbMod * leftValue);   
+        rearClimb.Set(ControlMode::PercentOutput, backClimbMod * rightValue * -1);
+        frontClimb.Set(ControlMode::PercentOutput, frontClimbMod * leftValue * -1);   
 
         // if (joystickMechanisms.GetRawButton(6)) {
         //     climbFrontUp();
@@ -435,13 +440,26 @@ public:
         //     stopBackClimb();
         // }
 
-        // if (joystickMechanisms.GetPOV() == 0) {
-        //     climbDriveForward();
-        // } else if (joystickMechanisms.GetPOV() == 180) {
-        //     climbDriveReverse();
-        // } else {
-        //     rearDrive.Set(ControlMode::PercentOutput, 0);
-        // }
+        if (joystickMain.GetPOV() == 0) {
+            rearDrive.Set(ControlMode::PercentOutput, -0.3);
+
+                /*
+            FR.Set(ControlMode::PercentOutput, -0.7 * driveSpeedMod);
+            FL.Set(ControlMode::PercentOutput, -0.7 * driveSpeedMod);
+            RR.Set(ControlMode::PercentOutput, 0.7 * driveSpeedMod);
+            RL.Set(ControlMode::PercentOutput, 0.7 * driveSpeedMod);*/
+        } else if (joystickMain.GetPOV() == 180) {
+            rearDrive.Set(ControlMode::PercentOutput, 0.3);
+
+            /*                
+            FR.Set(ControlMode::PercentOutput, FRpow * driveSpeedMod);
+            FL.Set(ControlMode::PercentOutput, FLpow * driveSpeedMod);
+            RR.Set(ControlMode::PercentOutput, RRpow * driveSpeedMod);
+            RL.Set(ControlMode::PercentOutput, RLpow * driveSpeedMod);*/
+
+        } else {
+            rearDrive.Set(ControlMode::PercentOutput, 0);
+        }
     }
 
     double getRealAngle(double degAng) {
@@ -706,7 +724,7 @@ public:
 
     void moveTilt(double pow) {
         pow *= -1;
-        if ((pow < 0 && tiltEncoder.Get() >= TILT_MIN) || (pow > 0 && tiltEncoder.Get() <= TILT_MAX)) {
+        if (true  || (pow < 0 && tiltEncoder.Get() >= TILT_MIN) || (pow > 0 && tiltEncoder.Get() <= TILT_MAX)) {
             tiltTalon.Set(ControlMode::PercentOutput, tiltMod * pow);
         } else {
             tiltTalon.Set(ControlMode::PercentOutput, 0);
