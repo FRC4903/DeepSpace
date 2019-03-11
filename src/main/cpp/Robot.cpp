@@ -58,6 +58,8 @@ public:
     const double elevatorMod = 0.5;
     const double autoTurnMod = 0.6;
 
+    const double driveClimbPower = 0.5;
+
     //TURN VARIABLES
     const double turnCheckSeconds = 2; 
     double targetAngle ; 
@@ -453,7 +455,7 @@ public:
         if (joystickMain.GetPOV() == 0) {
             rearDrive.Set(ControlMode::PercentOutput, -0.3);
 
-            driveSystem(-0.3, 0, 0); // Drive primary wheels
+            driveSystem(-driveClimbPower, 0, 0); // Drive primary wheels
 
                 /*
             FR.Set(ControlMode::PercentOutput, -0.7 * driveSpeedMod);
@@ -463,7 +465,7 @@ public:
         } else if (joystickMain.GetPOV() == 180) {
             rearDrive.Set(ControlMode::PercentOutput, 0.3);
 
-            driveSystem(0.3, 0, 0); // Drive primary wheels
+            driveSystem(driveClimbPower, 0, 0); // Drive primary wheels
 
 
             /*                
@@ -474,6 +476,7 @@ public:
 
         } else {
             rearDrive.Set(ControlMode::PercentOutput, 0);
+            driveSystem(0, 0, 0);
         }
     }
 
