@@ -294,6 +294,16 @@ public:
 
     // DRIVE SYSTEM
     void driveSystem()
+    {  
+        double leftX = joystickMain.GetRawAxis(0);
+        double leftY = joystickMain.GetRawAxis(1);
+
+        double rightX = joystickMain.GetRawAxis(4);
+
+        driveSystem(leftY, leftX, rightX);
+    }
+
+    void driveSystem(double leftY, double leftX, double rightX)
     {
         buttonTurn();
         
@@ -306,10 +316,10 @@ public:
             driveSpeedMod = 0.6; // limits the range given from the controller // 0.85 for carpet
 
                     
-        j_x_L = joystickMain.GetRawAxis(0);
-        j_y_L = joystickMain.GetRawAxis(1);
+        j_x_L = leftX;
+        j_y_L = leftY;
 
-        j_x_R = joystickMain.GetRawAxis(4);
+        j_x_R = rightX;
 
         if((j_x_L < 0 && j_x_L >= -0.05) || (j_x_L > 0 && j_x_L <= 0.05)) { j_x_L = 0; }
         if((j_y_L < 0 && j_y_L >= -0.05) || (j_y_L > 0 && j_y_L <= 0.05)) { j_y_L = 0; }
@@ -403,8 +413,8 @@ public:
     void doClimbMechanism() {
         //ASSIGN PROPER CONTROLLER AND CONTROLS BEFORE TESTING
 
-        double leftValue = joystickMain.GetRawAxis(1) * -1;
-        double rightValue = joystickMain.GetRawAxis(5) * -1;
+        double leftValue = joystickMain.GetRawAxis(1);
+        double rightValue = joystickMain.GetRawAxis(5);
 
         // So that the motor doesn't activate randomly
         if((leftValue < 0 && leftValue >= -0.05) || (leftValue > 0 && leftValue <= 0.05)) { leftValue = 0; }
@@ -412,17 +422,17 @@ public:
 
         // Prevent retraction of climb until end is reached
         if (!climbRetractionEnabled) {
-            if (leftValue < 0) {
+            if (leftValue > 0) {
                 leftValue = 0;
             }
 
-            if (rightValue < 0) {
+            if (rightValue > 0) {
                 rightValue = 0;
             }
         }
         
-        rearClimb.Set(ControlMode::PercentOutput, backClimbMod * rightValue * -1);
-        frontClimb.Set(ControlMode::PercentOutput, frontClimbMod * leftValue * -1);   
+        rearClimb.Set(ControlMode::PercentOutput, backClimbMod * rightValue);
+        frontClimb.Set(ControlMode::PercentOutput, frontClimbMod * leftValue);   
 
         // if (joystickMechanisms.GetRawButton(6)) {
         //     climbFrontUp();
@@ -443,6 +453,8 @@ public:
         if (joystickMain.GetPOV() == 0) {
             rearDrive.Set(ControlMode::PercentOutput, -0.3);
 
+            driveSystem(-0.3, 0, 0); // Drive primary wheels
+
                 /*
             FR.Set(ControlMode::PercentOutput, -0.7 * driveSpeedMod);
             FL.Set(ControlMode::PercentOutput, -0.7 * driveSpeedMod);
@@ -450,6 +462,9 @@ public:
             RL.Set(ControlMode::PercentOutput, 0.7 * driveSpeedMod);*/
         } else if (joystickMain.GetPOV() == 180) {
             rearDrive.Set(ControlMode::PercentOutput, 0.3);
+
+            driveSystem(0.3, 0, 0); // Drive primary wheels
+
 
             /*                
             FR.Set(ControlMode::PercentOutput, FRpow * driveSpeedMod);
