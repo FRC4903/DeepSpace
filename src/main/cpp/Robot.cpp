@@ -58,7 +58,7 @@ public:
     const double elevatorMod = 0.5;
     const double autoTurnMod = 0.6;
 
-    const double driveClimbPower = 0.5;
+    const double driveClimbPower = 0.8;
 
     //TURN VARIABLES
     const double turnCheckSeconds = 2; 
@@ -434,7 +434,7 @@ public:
         }
         
         rearClimb.Set(ControlMode::PercentOutput, backClimbMod * rightValue);
-        frontClimb.Set(ControlMode::PercentOutput, frontClimbMod * leftValue * -1);   
+        frontClimb.Set(ControlMode::PercentOutput, frontClimbMod * leftValue);   
 
         // if (joystickMechanisms.GetRawButton(6)) {
         //     climbFrontUp();
@@ -453,7 +453,7 @@ public:
         // }
 
         // Drive forward with dpad or forward stick going down
-        if (joystickMain.GetPOV() == 0 || leftValue < 0) {
+        if (joystickMain.GetPOV() == 0) {
             rearDrive.Set(ControlMode::PercentOutput, -0.3);
 
             driveSystem(-driveClimbPower, 0, 0); // Drive primary wheels
