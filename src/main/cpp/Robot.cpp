@@ -83,8 +83,8 @@ public:
 
     //HOOK SERVO DETAILS
     const int HOOK_SERVO = 7;
-    const int HOOK_IN_ANGLE = 0;
-    const int HOOK_OUT_ANGLE = 110;
+    const int HOOK_IN_ANGLE = 0; //150;
+    const int HOOK_OUT_ANGLE = 110; //0;
 
     // ELEVATOR TICKS
     const int MIDDLE_ELEVATOR_TICKS = 1088;
@@ -390,9 +390,9 @@ public:
 
     void doIntakeMechanism(){
         if (joystickMechanisms.GetRawButton(1)) {
-            intakeTalon.Set(ControlMode::PercentOutput, -0.5);
+            intakeTalon.Set(ControlMode::PercentOutput, -0.65);
         } else if (joystickMechanisms.GetRawButton(3)) {
-            intakeTalon.Set(ControlMode::PercentOutput, 0.5);
+            intakeTalon.Set(ControlMode::PercentOutput, 0.65);
         } else {
             intakeTalon.Set(ControlMode::PercentOutput, 0);
         }
