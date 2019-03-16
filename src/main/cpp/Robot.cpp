@@ -54,7 +54,7 @@ public:
     const double backClimbMod = 0.7;
 
     const double liftMod = 0.7;
-    const double tiltMod = 0.5;
+    const double tiltMod = 0.55;
     const double elevatorMod = 0.5;
     const double autoTurnMod = 0.6;
 
@@ -311,11 +311,11 @@ public:
         
         //ahrs->UpdateDisplacement(ahrs->GetWorldLinearAccelX(), ahrs->GetWorldLinearAccelY(), ahrs->GetActualUpdateRate(), ahrs->IsMoving());
         if (joystickMain.GetRawButton(6)) // if green a button is pressed
-            driveSpeedMod = 0.8; // makes robot go faster .. 1.0 for carpet
+            driveSpeedMod = 0.95; // makes robot go faster .. 1.0 for carpet
         else if (joystickMain.GetRawButton(5)) // if red b button is pressed
             driveSpeedMod = 0.4; // make it really slow
         else // base case let it be half speed
-            driveSpeedMod = 0.6; // limits the range given from the controller // 0.85 for carpet
+            driveSpeedMod = 0.75; // limits the range given from the controller // 0.85 for carpet
 
                     
         j_x_L = leftX;
