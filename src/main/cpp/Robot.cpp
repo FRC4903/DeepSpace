@@ -16,6 +16,9 @@
 
 #include "frc/WPILib.h"
 
+#include <networktables/NetworkTable.h>
+#include <networktables/NetworkTableInstance.h>
+
 #include <frc/Ultrasonic.h>
 #include <iostream>
 #include <cmath>
@@ -204,6 +207,7 @@ public:
 
     void TeleopInit() {
 
+
         // RESET VABLUES
         climbRetractionEnabled = false;
 
@@ -301,6 +305,10 @@ public:
         double leftY = joystickMain.GetRawAxis(1);
 
         double rightX = joystickMain.GetRawAxis(4);
+
+
+        nt::NetworkTableInstance::GetDefault().GetTable("Vision")->PutNumber("test", leftY);
+
 
         driveSystem(leftY, leftX, rightX);
     }
