@@ -54,7 +54,7 @@ public:
     const double backClimbMod = 0.75;
 
     const double liftMod = 0.7;
-    const double tiltMod = 0.65;
+    const double tiltMod = 0.75;
     const double elevatorMod = 0.5;
     const double autoTurnMod = 0.6;
 
