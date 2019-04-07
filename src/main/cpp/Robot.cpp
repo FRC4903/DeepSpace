@@ -54,10 +54,10 @@ public:
 
 
     const double frontClimbMod = 0.5;
-    const double backClimbMod = 0.7;
+    const double backClimbMod = 0.75;
 
     const double liftMod = 0.7;
-    const double tiltMod = 0.55;
+    const double tiltMod = 0.75;
     const double elevatorMod = 0.5;
     const double autoTurnMod = 0.6;
 
@@ -82,7 +82,7 @@ public:
 
     //ENCODER LIMITS
     const int TILT_MIN = 0;
-    const int TILT_MAX = 425000; // CHANGE OR ELSE BAD STUFF HAPPENS
+    const int TILT_MAX = 425000; // CHANGE OR ELSE BAD STUFF HAPPENS 
 
     //HOOK SERVO DETAILS
     const int HOOK_SERVO = 7;
@@ -93,7 +93,7 @@ public:
     const int MIDDLE_ELEVATOR_TICKS = 1088;
     const int TOP_ELEVATOR_TICKS = 2195;
 
-    const int HUMAN_ELEVATOR_TOLERANCE = 20;
+    const int HUMAN_ELEVATOR_TOLERANCE = 50;
 
     // ESTOP
     const double ESTOP_BOUNDARY = 0.1;
@@ -266,7 +266,12 @@ public:
 
         // DIsable driving if climbing
         if (!climbEnabled()) {
-            driveSystem();      
+            driveSystem();  
+
+                   
+        rearClimb.Set(ControlMode::PercentOutput, 0);
+        frontClimb.Set(ControlMode::PercentOutput, 0);   
+    
         }
 
         mechanismSystem();
@@ -400,7 +405,7 @@ public:
         if (joystickMechanisms.GetRawButton(1)) {
             intakeTalon.Set(ControlMode::PercentOutput, -0.65);
         } else if (joystickMechanisms.GetRawButton(3)) {
-            intakeTalon.Set(ControlMode::PercentOutput, 0.65);
+            intakeTalon.Set(ControlMode::PercentOutput, 0.75);
         } else {
             intakeTalon.Set(ControlMode::PercentOutput, 0);
         }
@@ -430,16 +435,6 @@ public:
         if((leftValue < 0 && leftValue >= -0.05) || (leftValue > 0 && leftValue <= 0.05)) { leftValue = 0; }
         if((rightValue < 0 && rightValue >= -0.05) || (rightValue > 0 && rightValue <= 0.05)) { rightValue = 0; }
 
-        // Prevent retraction of climb until end is reached
-        if (!climbRetractionEnabled) {
-            if (leftValue > 0) {
-                leftValue = 0;
-            }
-
-            if (rightValue > 0) {
-                rightValue = 0;
-            }
-        }
         
         rearClimb.Set(ControlMode::PercentOutput, backClimbMod * rightValue);
         frontClimb.Set(ControlMode::PercentOutput, frontClimbMod * leftValue);   
