@@ -274,10 +274,20 @@ public:
             cout << "ELEVATOR ESTOP" << endl;
         }
 
-        if (joystickMain.GetRawButton(7) && joystickMain.GetRawButton(8)) {
-            incognitoMode != incognitoMode;
-            
+        if (joystickMechanisms.GetRawButton(9)) {
+            incognitoMode = true;
+
+            diagramTable->PutNumber("incognito", 1); 
+
             cout << "INCOGNITO MODE ACTIVATED!!!!!" << endl;
+        }
+
+        if (joystickMechanisms.GetRawButton(10)) {
+            incognitoMode = false;
+
+            
+            diagramTable->PutNumber("incognito", 0); 
+
         }
 
         // DIsable driving if climbing
