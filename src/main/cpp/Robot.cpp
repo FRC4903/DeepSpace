@@ -16,6 +16,9 @@
 
 #include "frc/WPILib.h"
 
+#include <networktables/NetworkTable.h>
+#include <networktables/NetworkTableInstance.h>
+
 #include <frc/Ultrasonic.h>
 #include <iostream>
 #include <cmath>
@@ -97,6 +100,9 @@ public:
 
     // CREATE HOOK SERVO OBJECT
     Servo hookServo;
+    bool hookRetracted = true;
+
+    int intakeState = 0;
 
     // TIMERS
     Timer *turnTimer = new Timer();
@@ -130,10 +136,12 @@ public:
     //DRIVE VARIABLES
     double j_x_L, j_y_L, j_x_R;
 
-    bool climbRetractionEnabled = false;
+    bool incognitoMode = false;
 
     //INDUCTIVE SENSOR OBJECTS
     AnalogInput elevatorInductiveTop, elevatorInductiveBottom;
+
+    std::shared_ptr<NetworkTable> diagramTable = nt::NetworkTableInstance::GetDefault().GetTable("Diagram");
 
     //ROBOT INSTANCE
     Robot() :
@@ -171,9 +179,20 @@ public:
 
     //SETTING RGB COLOUR
     void setLED(bool r, bool g, bool b) {
-        red.Set(!r);
-        green.Set(!g);
-        blue.Set(b);
+        diagramTable->PutNumber("ledR", r ? 1 : 0);
+        diagramTable->PutNumber("ledG", g ? 1 : 0);
+        diagramTable->PutNumber("ledB", b ? 1 : 0);
+
+        if(incognitoMode) {
+            red.Set(true);
+            green.Set(true);
+            blue.Set(false);
+        } else {
+
+            red.Set(!r);
+            green.Set(!g);
+            blue.Set(b);
+        }
     }
 
     void setup()
@@ -204,8 +223,9 @@ public:
 
     void TeleopInit() {
 
+
         // RESET VABLUES
-        climbRetractionEnabled = false;
+        incognitoMode = false;
 
         //DRIVING IN BRAKE MODE
         FR.SetNeutralMode(NeutralMode::Brake);
@@ -255,9 +275,9 @@ public:
         }
 
         if (joystickMain.GetRawButton(7) && joystickMain.GetRawButton(8)) {
-            climbRetractionEnabled = true;
+            incognitoMode != incognitoMode;
             
-            cout << "CLIMB RETRACT ACTIVATED!!!!!" << endl;
+            cout << "INCOGNITO MODE ACTIVATED!!!!!" << endl;
         }
 
         // DIsable driving if climbing
@@ -276,15 +296,50 @@ public:
         //cout << ahrs->GetRate() << " " << ahrs->GetYaw() << endl;
 
         updateLED();
+
+        updateDisplay();
+    }
+
+    void updateDisplay() {
+        /*
+         * elevator
+         * backClimb
+         * frontClimb
+         * hook
+         * tilt
+         * intake
+         * ledR
+         * ledG
+         * ledB
+         * */
+
+        /*/
+         * 1 1 1
+         * 1 1 0
+         * 1 0 1
+         * 1 0 0 - Red Alliance
+         * 0 1 1
+         * 0 1 0 - Aligned
+         * 0 0 1 - Blue Alliance
+         * 0 0 0 - Incognito
+         */
+
+        diagramTable->PutNumber("elevator", elevatorEncoder.Get());
+        diagramTable->PutNumber("tilt", tiltEncoder.Get());
+        diagramTable->PutNumber("hook", hookRetracted ? 0 : 1); // true when hook is out
+        diagramTable->PutNumber("intake", intakeState); // true when hook is out
+
+        // Front and back climb are unknown
     }
 
     // Make LEDs green when within 10 ticks of top or middle elevator position
     void updateLED() {
-        // Elevator range 
-        if (abs(elevatorEncoder.Get() - MIDDLE_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE || abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE) {
+
+
+        // Elevator range
+        if (abs(elevatorEncoder.Get() - MIDDLE_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE ||
+            abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE) {
             setLED(false, true, false);
-        } else if(climbRetractionEnabled) {
-            setLED(true, true, false);
         } else {
             if (DriverStation::GetInstance().GetAlliance() == DriverStation::kRed) {
                 setLED(true, false, false);
@@ -292,6 +347,8 @@ public:
                 setLED(false, false, true);
             }
         }
+
+
     }
 
     bool climbEnabled() {
@@ -396,10 +453,16 @@ public:
     void doIntakeMechanism(){
         if (joystickMechanisms.GetRawButton(1)) {
             intakeTalon.Set(ControlMode::PercentOutput, -0.65);
+
+            intakeState = 1; // Suck
         } else if (joystickMechanisms.GetRawButton(3)) {
             intakeTalon.Set(ControlMode::PercentOutput, 0.75);
+
+            intakeState = -1; // Unsuck
         } else {
             intakeTalon.Set(ControlMode::PercentOutput, 0);
+
+            intakeState = 0; // Neutral
         }
     }
 
@@ -719,10 +782,12 @@ public:
 
     void hookIn() {
         hookServo.SetAngle(HOOK_IN_ANGLE);
+        hookRetracted = true;
     }
 
     void hookOut() {
         hookServo.SetAngle(HOOK_OUT_ANGLE);
+        hookRetracted = false;
     }
 
     void moveElevator(double pow) {
