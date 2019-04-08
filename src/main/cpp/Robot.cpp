@@ -55,7 +55,7 @@ public:
 
     const double liftMod = 0.7;
     const double tiltMod = 0.75;
-    const double elevatorMod = 0.5;
+    const double elevatorMod = 0.7;
     const double autoTurnMod = 0.6;
 
     const double driveClimbPower = 0.8;
@@ -409,11 +409,11 @@ public:
         
         if (joystickMechanisms.GetRawButton(5) && joystickMechanisms.GetRawButton(6)) { // LEVEL 3
 
-            initElevator(MIDDLE_ELEVATOR_TICKS);
+            initElevator(TOP_ELEVATOR_TICKS);
 
         } else if (joystickMechanisms.GetRawButton(7) && joystickMechanisms.GetRawButton(8)) { // LEVEL 2
         
-            initElevator(TOP_ELEVATOR_TICKS);
+            initElevator(MIDDLE_ELEVATOR_TICKS);
         }
     }
 
