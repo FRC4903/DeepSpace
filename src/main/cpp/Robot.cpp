@@ -136,12 +136,12 @@ public:
     //DRIVE VARIABLES
     double j_x_L, j_y_L, j_x_R;
 
-    bool climbRetractionEnabled = false;
+    bool incognitoMode = false;
 
     //INDUCTIVE SENSOR OBJECTS
     AnalogInput elevatorInductiveTop, elevatorInductiveBottom;
 
-    nt::NetworkTable diagramTable = nt::NetworkTableInstance::GetDefault().GetTable("Diagram");
+    std::shared_ptr<NetworkTable> diagramTable = nt::NetworkTableInstance::GetDefault().GetTable("Diagram");
 
     //ROBOT INSTANCE
     Robot() :
@@ -183,9 +183,16 @@ public:
         diagramTable->PutNumber("ledG", g ? 1 : 0);
         diagramTable->PutNumber("ledB", b ? 1 : 0);
 
-        red.Set(!r);
-        green.Set(!g);
-        blue.Set(b);
+        if(incognitoMode) {
+            red.Set(true);
+            green.Set(true);
+            blue.Set(false);
+        } else {
+
+            red.Set(!r);
+            green.Set(!g);
+            blue.Set(b);
+        }
     }
 
     void setup()
@@ -218,7 +225,7 @@ public:
 
 
         // RESET VABLUES
-        climbRetractionEnabled = false;
+        incognitoMode = false;
 
         //DRIVING IN BRAKE MODE
         FR.SetNeutralMode(NeutralMode::Brake);
@@ -268,9 +275,9 @@ public:
         }
 
         if (joystickMain.GetRawButton(7) && joystickMain.GetRawButton(8)) {
-            climbRetractionEnabled = true;
+            incognitoMode != incognitoMode;
             
-            cout << "CLIMB RETRACT ACTIVATED!!!!!" << endl;
+            cout << "INCOGNITO MODE ACTIVATED!!!!!" << endl;
         }
 
         // DIsable driving if climbing
@@ -306,6 +313,17 @@ public:
          * ledB
          * */
 
+        /*/
+         * 1 1 1
+         * 1 1 0
+         * 1 0 1
+         * 1 0 0 - Red Alliance
+         * 0 1 1
+         * 0 1 0 - Aligned
+         * 0 0 1 - Blue Alliance
+         * 0 0 0 - Incognito
+         */
+
         diagramTable->PutNumber("elevator", elevatorEncoder.Get());
         diagramTable->PutNumber("tilt", tiltEncoder.Get());
         diagramTable->PutNumber("hook", hookRetracted ? 0 : 1); // true when hook is out
@@ -316,11 +334,12 @@ public:
 
     // Make LEDs green when within 10 ticks of top or middle elevator position
     void updateLED() {
-        // Elevator range 
-        if (abs(elevatorEncoder.Get() - MIDDLE_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE || abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE) {
+
+
+        // Elevator range
+        if (abs(elevatorEncoder.Get() - MIDDLE_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE ||
+            abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE) {
             setLED(false, true, false);
-        } else if(climbRetractionEnabled) {
-            setLED(true, true, false);
         } else {
             if (DriverStation::GetInstance().GetAlliance() == DriverStation::kRed) {
                 setLED(true, false, false);
@@ -328,6 +347,8 @@ public:
                 setLED(false, false, true);
             }
         }
+
+
     }
 
     bool climbEnabled() {
