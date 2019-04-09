@@ -339,6 +339,8 @@ public:
         diagramTable->PutNumber("hook", hookRetracted ? 0 : 1); // true when hook is out
         diagramTable->PutNumber("intake", intakeState); // true when hook is out
 
+        diagramTable->PutNumber("red", DriverStation::GetInstance().GetAlliance() == DriverStation::kRed ? 1 : 0); // true when on red
+
         // Front and back climb are unknown
     }
 
