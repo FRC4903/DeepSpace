@@ -73,6 +73,11 @@ public:
     bool elevatorAuto;
     const double elevatorCheckSeconds = 10;
 
+    // Tilt GOTO
+    double tiltTargetTick;
+    bool tiltAuto;
+    const double tiltCheckSeconds = 5;
+
     //DRIVE SPEED MODERATOR
     double driveSpeedMod;
 
@@ -112,6 +117,7 @@ public:
     // TIMERS
     Timer *turnTimer = new Timer();
     Timer *elevatorTimer = new Timer();
+    Timer *tiltTimer = new Timer();
 
     // ULTRASONICS
     Ultrasonic *ultraFront;
@@ -220,10 +226,16 @@ public:
     void AutonomousInit() {
     //COOL PROGRAMMING STUFF USED TO BE HERE
         TeleopInit();
+        
+        hookOut();
+        initTilt(141000);
+
+        tiltEncoder.Reset();
     }
 
     void AutonomousPeriodic() {
         TeleopPeriodic();
+
     }
 
     void TeleopInit() {
@@ -255,6 +267,8 @@ public:
         //RESET GYRO
         resetGyro();
 
+        tiltTimer->Start();
+        tiltTimer->Reset();
         
         elevatorTimer->Start();
         elevatorTimer->Reset();
@@ -308,6 +322,7 @@ public:
         mechanismSystem();
         updateTurn();
         updateElevator();
+        updateTilt();
         //cout << ahrs->GetRate() << " " << ahrs->GetYaw() << endl;
 
         updateLED();
@@ -651,6 +666,42 @@ public:
         }
 
     }
+
+    void initTilt(double ticks) {
+
+        tiltTargetTick = ticks;
+        tiltAuto = true;
+
+        tiltTimer->Reset();
+
+        cout << "Starting auto tilt to level: " << ticks << endl;
+
+        // Timer????
+
+    }
+
+    void updateTilt() {
+
+        if (tiltAuto) {
+
+            // Go up if up and down if down
+            if (tiltTargetTick > tiltEncoder.Get() && tiltEncoder.Get() < TILT_MAX) { //!inductiveSensorState(&elevatorInductiveTop)) {
+                tiltTalon.Set(ControlMode::PercentOutput, 0.4);
+            } else if (tiltTargetTick < tiltEncoder.Get() && tiltEncoder.Get() > TILT_MIN) { //!inductiveSensorState(&elevatorInductiveBottom)) {
+                tiltTalon.Set(ControlMode::PercentOutput, -0.4);
+            }
+
+            //  inductiveSensorState(&elevatorInductiveTop) || inductiveSensorState(&elevatorInductiveBottom) 
+
+            // Kill everything if inductive is reached
+            if (abs(tiltTargetTick - tiltEncoder.Get()) < 10000 || tiltEncoder.Get() > TILT_MAX || tiltEncoder.Get() < TILT_MIN || tiltTimer->Get() > tiltCheckSeconds) {
+                tiltAuto = false;
+            }
+
+        }
+
+    }
+
 
     void beginTurn(double moveAngle){
         targetAngle = moveAngle;
