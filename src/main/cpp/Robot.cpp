@@ -53,7 +53,7 @@ public:
     const double climbMod = 0.7;
 
 
-    const double frontClimbMod = 0.5;
+    const double frontClimbMod = 0.7;
     const double backClimbMod = 0.75;
 
     const double liftMod = 0.7;
@@ -92,6 +92,11 @@ public:
     // ELEVATOR TICKS
     const int MIDDLE_ELEVATOR_TICKS = 1088;
     const int TOP_ELEVATOR_TICKS = 2195;
+    const int CARGO_BAY_TICKS = 700; // to be checked later
+
+    // const int TOP_ELEVATOR_LIMIT = 2200; // to be checked later
+    const int TOP_ELEVATOR_LIMIT = 2200; // to be checked later
+    const int BOTTOM_ELEVATOR_LIMIT = 0; // to be checked later
 
     const int HUMAN_ELEVATOR_TOLERANCE = 50;
 
@@ -350,7 +355,8 @@ public:
 
         // Elevator range
         if (abs(elevatorEncoder.Get() - MIDDLE_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE ||
-            abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE) {
+            abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE ||
+            abs(elevatorEncoder.Get() - CARGO_BAY_TICKS) < HUMAN_ELEVATOR_TOLERANCE) {
             setLED(false, true, false);
         } else {
             if (DriverStation::GetInstance().GetAlliance() == DriverStation::kRed) {
@@ -385,7 +391,7 @@ public:
         
         //ahrs->UpdateDisplacement(ahrs->GetWorldLinearAccelX(), ahrs->GetWorldLinearAccelY(), ahrs->GetActualUpdateRate(), ahrs->IsMoving());
         if (joystickMain.GetRawButton(6)) // if green a button is pressed
-            driveSpeedMod = 0.95; // makes robot go faster .. 1.0 for carpet
+            driveSpeedMod = 1; // makes robot go faster .. 1.0 for carpet
         else if (joystickMain.GetRawButton(5)) // if red b button is pressed
             driveSpeedMod = 0.4; // make it really slow
         else // base case let it be half speed
@@ -629,14 +635,16 @@ public:
         if (elevatorAuto) {
 
             // Go up if up and down if down
-            if (elevatorTargetTick > elevatorEncoder.Get() && !inductiveSensorState(&elevatorInductiveTop)) {
+            if (elevatorTargetTick > elevatorEncoder.Get() && elevatorEncoder.Get() < TOP_ELEVATOR_LIMIT) { //!inductiveSensorState(&elevatorInductiveTop)) {
                 elevatorTalon.Set(ControlMode::PercentOutput, elevatorMod);
-            } else if (elevatorTargetTick < elevatorEncoder.Get() && !inductiveSensorState(&elevatorInductiveBottom)) {
+            } else if (elevatorTargetTick < elevatorEncoder.Get() && elevatorEncoder.Get() > BOTTOM_ELEVATOR_LIMIT) { //!inductiveSensorState(&elevatorInductiveBottom)) {
                 elevatorTalon.Set(ControlMode::PercentOutput, -elevatorMod);
             }
 
+            //  inductiveSensorState(&elevatorInductiveTop) || inductiveSensorState(&elevatorInductiveBottom) 
+
             // Kill everything if inductive is reached
-            if (abs(elevatorTargetTick - elevatorEncoder.Get()) < 10 || inductiveSensorState(&elevatorInductiveTop) || inductiveSensorState(&elevatorInductiveBottom)  || elevatorTimer->Get() > elevatorCheckSeconds) {
+            if (abs(elevatorTargetTick - elevatorEncoder.Get()) < 10 || elevatorEncoder.Get() > TOP_ELEVATOR_LIMIT || elevatorEncoder.Get() < BOTTOM_ELEVATOR_LIMIT || elevatorTimer->Get() > elevatorCheckSeconds) {
                 elevatorAuto = false;
             }
 
@@ -804,7 +812,11 @@ public:
 
     void moveElevator(double pow) {
         pow *= -1;
-        if ((pow > 0.05 && !inductiveSensorState(&elevatorInductiveTop)) || (pow < -0.05 && !inductiveSensorState(&elevatorInductiveBottom))) {
+
+        //if ((pow > 0.05 && !inductiveSensorState(&elevatorInductiveTop)) || (pow < -0.05 && !inductiveSensorState(&elevatorInductiveBottom))) {
+        
+        if ((pow > 0.05 && elevatorEncoder.Get() < TOP_ELEVATOR_LIMIT) || (pow < -0.05 && elevatorEncoder.Get() > BOTTOM_ELEVATOR_LIMIT)) {
+      
             elevatorTalon.Set(ControlMode::PercentOutput, liftMod * pow);
 
         } else {
