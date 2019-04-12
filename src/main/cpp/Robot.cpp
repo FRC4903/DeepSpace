@@ -297,7 +297,7 @@ public:
             cout << "ELEVATOR ESTOP" << endl;
         }
 
-        if (joystickMechanisms.GetRawButton(9)) {
+        if (joystickMain.GetRawButton(7)) {
             incognitoMode = true;
 
             diagramTable->PutNumber("incognito", 1); 
@@ -305,12 +305,17 @@ public:
             cout << "INCOGNITO MODE ACTIVATED!!!!!" << endl;
         }
 
-        if (joystickMechanisms.GetRawButton(10)) {
+        if (joystickMain.GetRawButton(8)) {
             incognitoMode = false;
 
             
             diagramTable->PutNumber("incognito", 0); 
+        }
 
+        if (joystickMechanisms.GetRawButton(9) || joystickMechanisms.GetRawButton(10)) {
+            // Reset elevator encoder
+
+            elevatorEncoder.Reset();
         }
 
         // DIsable driving if climbing
@@ -489,11 +494,11 @@ public:
 
     void doIntakeMechanism(){
         if (joystickMechanisms.GetRawButton(1)) {
-            intakeTalon.Set(ControlMode::PercentOutput, -0.65);
+            intakeTalon.Set(ControlMode::PercentOutput, -0.75);
 
             intakeState = 1; // Suck
         } else if (joystickMechanisms.GetRawButton(3)) {
-            intakeTalon.Set(ControlMode::PercentOutput, 0.75);
+            intakeTalon.Set(ControlMode::PercentOutput, 0.85);
 
             intakeState = -1; // Unsuck
         } else {
@@ -830,7 +835,7 @@ public:
     void DisabledPeriodic() {
         setLED(false, false, true);
 
-        if (joystickMechanisms.GetRawButton(9)) {
+       if (joystickMain.GetRawButton(7)) {
             incognitoMode = true;
 
             diagramTable->PutNumber("incognito", 1); 
@@ -838,13 +843,13 @@ public:
             cout << "INCOGNITO MODE ACTIVATED!!!!!" << endl;
         }
 
-        if (joystickMechanisms.GetRawButton(10)) {
+        if (joystickMain.GetRawButton(8)) {
             incognitoMode = false;
 
             
             diagramTable->PutNumber("incognito", 0); 
-
         }
+
     }
 
     void climbFront(float power) {
