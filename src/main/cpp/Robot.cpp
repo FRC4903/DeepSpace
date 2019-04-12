@@ -53,12 +53,13 @@ public:
     const double climbMod = 0.7;
 
 
-    const double frontClimbMod = 0.7;
+    const double frontClimbMod = 1;
     const double backClimbMod = 0.75;
 
     const double liftMod = 0.7;
     const double tiltMod = 0.75;
     const double elevatorMod = 0.7;
+    const double autoElevatorMod = 0.8;
     const double autoTurnMod = 0.6;
 
     const double driveClimbPower = 0.8;
@@ -76,7 +77,7 @@ public:
     // Tilt GOTO
     double tiltTargetTick;
     bool tiltAuto;
-    const double tiltCheckSeconds = 5;
+    const double tiltCheckSeconds = 2;
 
     //DRIVE SPEED MODERATOR
     double driveSpeedMod;
@@ -95,7 +96,7 @@ public:
     const int HOOK_OUT_ANGLE = 110; //0;
 
     // ELEVATOR TICKS
-    const int MIDDLE_ELEVATOR_TICKS = 1088;
+    const int MIDDLE_ELEVATOR_TICKS = 1114;
     const int TOP_ELEVATOR_TICKS = 2195;
     const int CARGO_BAY_TICKS = 700; // to be checked later
 
@@ -240,9 +241,12 @@ public:
 
     void TeleopInit() {
 
-
         // RESET VABLUES
-        incognitoMode = false;
+        //incognitoMode = false;
+
+        elevatorAuto = false;
+        turning = false;
+        tiltAuto = false;
 
         //DRIVING IN BRAKE MODE
         FR.SetNeutralMode(NeutralMode::Brake);
@@ -505,11 +509,11 @@ public:
         
         if (joystickMechanisms.GetRawButton(5) && joystickMechanisms.GetRawButton(6)) { // LEVEL 3
 
-            initElevator(TOP_ELEVATOR_TICKS);
+            initElevator(MIDDLE_ELEVATOR_TICKS);
 
         } else if (joystickMechanisms.GetRawButton(7) && joystickMechanisms.GetRawButton(8)) { // LEVEL 2
         
-            initElevator(MIDDLE_ELEVATOR_TICKS);
+            initElevator(TOP_ELEVATOR_TICKS);
         }
     }
 
@@ -650,15 +654,25 @@ public:
         if (elevatorAuto) {
 
             // Go up if up and down if down
-            if (elevatorTargetTick > elevatorEncoder.Get() && elevatorEncoder.Get() < TOP_ELEVATOR_LIMIT) { //!inductiveSensorState(&elevatorInductiveTop)) {
-                elevatorTalon.Set(ControlMode::PercentOutput, elevatorMod);
-            } else if (elevatorTargetTick < elevatorEncoder.Get() && elevatorEncoder.Get() > BOTTOM_ELEVATOR_LIMIT) { //!inductiveSensorState(&elevatorInductiveBottom)) {
-                elevatorTalon.Set(ControlMode::PercentOutput, -elevatorMod);
+            if ((abs(elevatorEncoder.Get() - MIDDLE_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE && elevatorTargetTick == MIDDLE_ELEVATOR_TICKS) && elevatorEncoder.Get() < TOP_ELEVATOR_LIMIT) {
+                
+                elevatorTalon.Set(ControlMode::PercentOutput, 0.1);
+
+            } else if ((abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE && elevatorTargetTick == TOP_ELEVATOR_TICKS) && elevatorEncoder.Get() < TOP_ELEVATOR_LIMIT) {
+                
+                elevatorTalon.Set(ControlMode::PercentOutput, 0.15);
+
+            } else {
+                if (elevatorTargetTick > elevatorEncoder.Get() && elevatorEncoder.Get() < TOP_ELEVATOR_LIMIT) { //!inductiveSensorState(&elevatorInductiveTop)) {
+                    elevatorTalon.Set(ControlMode::PercentOutput, autoElevatorMod);
+                } else if (elevatorTargetTick < elevatorEncoder.Get() && elevatorEncoder.Get() > BOTTOM_ELEVATOR_LIMIT) { //!inductiveSensorState(&elevatorInductiveBottom)) {
+                    elevatorTalon.Set(ControlMode::PercentOutput, -autoElevatorMod);
+                }
             }
 
             //  inductiveSensorState(&elevatorInductiveTop) || inductiveSensorState(&elevatorInductiveBottom) 
 
-            // Kill everything if inductive is reached
+            // Kill everything if encoder limit is reached
             if (abs(elevatorTargetTick - elevatorEncoder.Get()) < 10 || elevatorEncoder.Get() > TOP_ELEVATOR_LIMIT || elevatorEncoder.Get() < BOTTOM_ELEVATOR_LIMIT || elevatorTimer->Get() > elevatorCheckSeconds) {
                 elevatorAuto = false;
             }
@@ -815,6 +829,22 @@ public:
 
     void DisabledPeriodic() {
         setLED(false, false, true);
+
+        if (joystickMechanisms.GetRawButton(9)) {
+            incognitoMode = true;
+
+            diagramTable->PutNumber("incognito", 1); 
+
+            cout << "INCOGNITO MODE ACTIVATED!!!!!" << endl;
+        }
+
+        if (joystickMechanisms.GetRawButton(10)) {
+            incognitoMode = false;
+
+            
+            diagramTable->PutNumber("incognito", 0); 
+
+        }
     }
 
     void climbFront(float power) {
