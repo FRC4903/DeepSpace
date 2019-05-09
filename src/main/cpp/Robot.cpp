@@ -57,9 +57,10 @@ public:
     const double backClimbMod = 0.75;
 
     const double liftMod = 0.7;
-    const double tiltMod = 0.75;
+    const double tiltMod = 0.85;
     const double elevatorMod = 0.7;
     const double autoElevatorMod = 0.8;
+    const double slowElevatorMode = 0.6;
     const double autoTurnMod = 0.6;
 
     const double driveClimbPower = 0.8;
@@ -661,7 +662,7 @@ public:
             // Go up if up and down if down
             if ((abs(elevatorEncoder.Get() - MIDDLE_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE && elevatorTargetTick == MIDDLE_ELEVATOR_TICKS) && elevatorEncoder.Get() < TOP_ELEVATOR_LIMIT) {
                 
-                elevatorTalon.Set(ControlMode::PercentOutput, 0.1);
+                elevatorTalon.Set(ControlMode::PercentOutput, 0.12);
 
             } else if ((abs(elevatorEncoder.Get() - TOP_ELEVATOR_TICKS) < HUMAN_ELEVATOR_TOLERANCE && elevatorTargetTick == TOP_ELEVATOR_TICKS) && elevatorEncoder.Get() < TOP_ELEVATOR_LIMIT) {
                 
@@ -669,9 +670,9 @@ public:
 
             } else {
                 if (elevatorTargetTick > elevatorEncoder.Get() && elevatorEncoder.Get() < TOP_ELEVATOR_LIMIT) { //!inductiveSensorState(&elevatorInductiveTop)) {
-                    elevatorTalon.Set(ControlMode::PercentOutput, autoElevatorMod);
+                    elevatorTalon.Set(ControlMode::PercentOutput, abs(elevatorTargetTick - elevatorEncoder.Get()) < 100 ? slowElevatorMode : autoElevatorMod);
                 } else if (elevatorTargetTick < elevatorEncoder.Get() && elevatorEncoder.Get() > BOTTOM_ELEVATOR_LIMIT) { //!inductiveSensorState(&elevatorInductiveBottom)) {
-                    elevatorTalon.Set(ControlMode::PercentOutput, -autoElevatorMod);
+                    elevatorTalon.Set(ControlMode::PercentOutput, abs(elevatorTargetTick - elevatorEncoder.Get()) < 100 ? -slowElevatorMode : -autoElevatorMod);
                 }
             }
 
